@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vote for Amogh - Fire & Ice</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <nav class="navbar">
         <div class="logo">
-            <i data-lucide="shield" class="text-fire" style="margin-right: 4px;"></i>
+            <img src="/static/images/scislogo-removebg-preview.png" alt="School Logo" style="height: 40px; width: auto;">
             <span class="brand">Fire & Ice</span>
         </div>
         <button class="hamburger" onclick="toggleNav()"><i data-lucide="menu"></i></button>
@@ -20,22 +20,22 @@
             <li><a href="#about" class="nav-link" data-page="about">About</a></li>
             <li><a href="#manifesto" class="nav-link" data-page="manifesto">Manifesto</a></li>
             <li class="dropdown">
-                <a href="#" class="nav-link">Engage ▼</a>
+                <a href="#" class="nav-link">Engage <i data-lucide="chevron-down" size="14"></i></a>
                 <div class="dropdown-content">
                     <a href="#polls" class="nav-link" data-page="polls"><i data-lucide="bar-chart-2"></i> Polls</a>
                     <a href="#idea-box" class="nav-link" data-page="idea-box"><i data-lucide="lightbulb"></i> Idea Box</a>
-                    <a href="#feedback" class="nav-link" data-page="feedback"><i data-lucide="shield-alert"></i> Feedback</a>
+                    <a href="#feedback" class="nav-link" data-page="feedback"><i data-lucide="message-square"></i> Feedback</a>
                 </div>
             </li>
             <li class="dropdown">
-                <a href="#" class="nav-link">Track ▼</a>
+                <a href="#" class="nav-link">Track <i data-lucide="chevron-down" size="14"></i></a>
                 <div class="dropdown-content">
                     <a href="#track" class="nav-link" data-page="track"><i data-lucide="search"></i> Universal Tracker</a>
                     <a href="#action-board" class="nav-link" data-page="action-board"><i data-lucide="list"></i> Action Board</a>
                 </div>
             </li>
             <li class="dropdown">
-                <a href="#" class="nav-link">Progress ▼</a>
+                <a href="#" class="nav-link">Progress <i data-lucide="chevron-down" size="14"></i></a>
                 <div class="dropdown-content">
                     <a href="#progress" class="nav-link" data-page="progress"><i data-lucide="trello"></i> Task Board</a>
                     <a href="#announcements" class="nav-link" data-page="announcements"><i data-lucide="bell"></i> Announcements</a>
@@ -48,74 +48,81 @@
         <!-- Home Page -->
         <section id="home" class="page active">
             <div class="hero">
-                <h1>Vote for <span class="text-fire">Amogh</span>. Vote for <span class="text-ice">Fire & Ice</span>.</h1>
+                <h1>Vote for <span class="text-fire">Amogh</span>.<br>Vote for <span class="brand">Fire & Ice</span>.</h1>
                 <p class="slogan">"<span class="slogan-fire">Fire to act.</span> <span class="slogan-ice">Ice to listen.</span>"</p>
                 <div class="hero-buttons">
-                    <button class="btn btn-primary" onclick="navigate('feedback')">Speak Anonymously</button>
-                    <button class="btn btn-secondary" onclick="navigate('support')">Support the Campaign</button>
+                    <button class="btn btn-primary" onclick="navigate('feedback')"><i data-lucide="message-circle"></i> Speak Anonymously</button>
+                    <button class="btn btn-secondary" onclick="navigate('support')"><i data-lucide="heart"></i> Support Campaign</button>
                 </div>
-            </div>
-            
-            <div class="quick-links">
-                <a href="#idea-box" onclick="navigate('idea-box')" class="quick-link-btn"><i data-lucide="lightbulb"></i> Idea Box</a>
-                <a href="#lost-found" onclick="navigate('lost-found')" class="quick-link-btn"><i data-lucide="search"></i> Lost & Found</a>
-                <a href="#study-groups" onclick="navigate('study-groups')" class="quick-link-btn"><i data-lucide="users"></i> Study Groups</a>
+                
+                <div class="quick-links">
+                    <a href="#idea-box" onclick="navigate('idea-box')" class="quick-link-btn"><i data-lucide="lightbulb"></i> Idea Box</a>
+                    <a href="#lost-found" onclick="navigate('lost-found')" class="quick-link-btn"><i data-lucide="search"></i> Lost & Found</a>
+                    <a href="#study-groups" onclick="navigate('study-groups')" class="quick-link-btn"><i data-lucide="users"></i> Study Groups</a>
+                </div>
             </div>
 
-            <div class="features" style="margin-top: 3rem;">
+            <div class="features">
                 <div class="card card-info">
                     <h3><i data-lucide="trending-up" class="text-ice"></i> Pulse Snapshot</h3>
-                    <p style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-label);">Top priority issues voted by students</p>
+                    <p style="font-size: 0.95rem; margin-bottom: 1.5rem; color: var(--text-label);">Top priority issues voted by students</p>
                     <div id="home-pulse-snapshot">Loading...</div>
-                    <button class="btn btn-secondary w-100" style="margin-top: 1.5rem;" onclick="navigate('pulse')">Vote Now</button>
+                    <button class="btn btn-secondary w-100" style="margin-top: 2rem;" onclick="navigate('polls')">Vote in Polls</button>
                 </div>
                 <div class="card card-urgent">
-                    <h3><i data-lucide="flame" class="text-fire"></i> Action Driven</h3>
-                    <p>We believe in swift actions, accountability, and getting things done.</p>
+                    <h3><i data-lucide="zap" class="text-fire"></i> Action Driven</h3>
+                    <p>We believe in swift actions, transparency, and getting things done for the community.</p>
                 </div>
                 <div class="card card-info">
-                    <h3><i data-lucide="snowflake" class="text-ice"></i> Compassionate</h3>
-                    <p>We provide a safe, calm space to listen to your concerns without judgment.</p>
+                    <h3><i data-lucide="snowflake" class="text-ice"></i> Empathetic</h3>
+                    <p>We provide a safe, calm space to listen to your concerns and act on them with care.</p>
                 </div>
             </div>
         </section>
 
+
         <!-- About Page -->
         <section id="about" class="page">
-            <h2><i data-lucide="user"></i> About Amogh</h2>
+            <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                <img src="/static/images/logo_school_captain-removebg-preview.png" alt="School Captain Logo" style="height: 120px; width: auto; border-radius: 12px; background: white; padding: 10px; box-shadow: var(--shadow-sm);">
+                <div>
+                    <h2 style="margin-bottom: 0.5rem;"><i data-lucide="user-circle"></i> About Amogh</h2>
+                    <p style="color: var(--text-label); font-weight: 500;">School Captain Candidate 2026</p>
+                </div>
+            </div>
             <div class="card">
-                <p>Amogh is running to bring a balance of decisive action (<span class="text-fire">Fire</span>) and empathetic listening (<span class="text-ice">Ice</span>) to our school.</p>
-                <p>A leader who doesn't just promise but delivers while keeping your well-being in mind.</p>
+                <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">Amogh is running to bring a balance of decisive action (<span class="text-fire" style="font-weight: 700;">Fire</span>) and empathetic listening (<span class="text-ice" style="font-weight: 700;">Ice</span>) to our school.</p>
+                <p>A leader who doesn't just promise but delivers while keeping your well-being in mind. Our vision is to create a school environment where every student feels heard and protected.</p>
             </div>
         </section>
 
         <!-- Manifesto Page -->
         <section id="manifesto" class="page">
-            <h2><i data-lucide="book-open"></i> Campaign Promises</h2>
+            <h2><i data-lucide="scroll-text"></i> Campaign Promises</h2>
             <div class="manifesto-grid">
-                <div class="card">
+                <div class="card card-info">
                     <h4><i data-lucide="shield-check" class="text-ice"></i> Student Safety</h4>
-                    <p>A zero-tolerance policy towards harassment with safe spaces for all.</p>
+                    <p>A zero-tolerance policy towards harassment with safe spaces for all students to express themselves.</p>
                 </div>
                 <div class="card card-urgent">
                     <h4><i data-lucide="shield-alert" class="text-fire"></i> Anti-bullying System</h4>
-                    <p>Proactive AI-assisted anonymous reporting to protect identities.</p>
+                    <p>Proactive AI-assisted anonymous reporting to protect identities and ensure swift resolution.</p>
                 </div>
-                <div class="card">
+                <div class="card card-info">
                     <h4><i data-lucide="message-square" class="text-ice"></i> Better Communication</h4>
-                    <p>Transparent action boards showing exactly what the council is working on.</p>
+                    <p>Transparent action boards showing exactly what the council is working on in real-time.</p>
                 </div>
-                <div class="card">
+                <div class="card card-info">
                     <h4><i data-lucide="mic" class="text-ice"></i> Student Voice</h4>
-                    <p>Regular town halls and an open-door policy for everyone.</p>
+                    <p>Regular town halls and an open-door policy for everyone to share their vision for the school.</p>
                 </div>
             </div>
         </section>
 
         <!-- Anonymous Feedback Page -->
         <section id="feedback" class="page">
-            <h2><i data-lucide="user-x"></i> Speak Anonymously</h2>
-            <p style="margin-bottom: 2rem;">Your identity is safe. Tell us what needs to change.</p>
+            <h2><i data-lucide="message-square"></i> Speak Anonymously</h2>
+            <p style="margin-bottom: 2.5rem; color: var(--text-label);">Your identity is 100% protected. Tell us what needs to change in our school.</p>
             
             <form id="feedback-form" class="card form-container card-urgent">
                 <div class="form-group">
@@ -129,21 +136,21 @@
                 </div>
                 <div class="form-group">
                     <label>Message</label>
-                    <textarea id="f-message" rows="5" required placeholder="Describe your concern..."></textarea>
+                    <textarea id="f-message" rows="5" required placeholder="Describe your concern in detail..."></textarea>
                 </div>
                 <div class="form-group">
                     <label>Urgency Level</label>
                     <select id="f-urgency">
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
+                        <option value="Low">Low - For information</option>
+                        <option value="Medium">Medium - Needs attention</option>
+                        <option value="High">High - Immediate action required</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Grade/Class (Optional)</label>
                     <input type="text" id="f-grade" placeholder="e.g. 10th Grade">
                 </div>
-                <button type="submit" class="btn btn-primary w-100" id="submit-feedback-btn">Submit Feedback</button>
+                <button type="submit" class="btn btn-primary w-100" id="submit-feedback-btn"><i data-lucide="send"></i> Submit Securely</button>
                 <p id="feedback-result" class="result-msg"></p>
             </form>
         </section>
@@ -163,12 +170,15 @@
 
         <!-- Support Page -->
         <section id="support" class="page">
-            <h2><i data-lucide="heart"></i> Pledge Your Support</h2>
-            <div class="card text-center">
-                <h1 id="support-counter" style="font-size: 4rem; color: var(--ice-color); justify-content: center;">--</h1>
-                <p style="margin-bottom: 2rem;">Students supporting Fire & Ice</p>
-                <button class="btn btn-primary" onclick="pledgeSupport()" id="pledge-btn">Support Now</button>
-                <p id="support-msg" class="result-msg"></p>
+            <div class="text-center">
+                <h2><i data-lucide="heart" class="text-fire"></i> Join the Movement</h2>
+                <p style="margin-bottom: 3rem; color: var(--text-label);">Together, we can make Fire & Ice a reality.</p>
+            </div>
+            <div class="card text-center" style="padding: 4rem 2rem;">
+                <h1 id="support-counter" class="gradient-text" style="font-size: 6rem; justify-content: center; margin-bottom: 1rem;">--</h1>
+                <p style="font-size: 1.25rem; font-weight: 600; margin-bottom: 2.5rem; color: var(--text-label);">Students supporting Fire & Ice</p>
+                <button class="btn btn-primary" onclick="pledgeSupport()" id="pledge-btn" style="padding: 1.5rem 4rem; font-size: 1.2rem;"><i data-lucide="thumbs-up"></i> Pledge Your Support</button>
+                <p id="support-msg" class="result-msg" style="margin-top: 2rem;"></p>
             </div>
         </section>
 
@@ -251,69 +261,74 @@
 
         <!-- Idea Box Page -->
         <section id="idea-box" class="page">
-            <h2><i data-lucide="lightbulb"></i> Idea Box</h2>
-            <p style="margin-bottom: 2rem;">Share constructive suggestions for our school. (Separate from complaints).</p>
+            <h2><i data-lucide="lightbulb" class="text-ice"></i> The Idea Box</h2>
+            <p style="margin-bottom: 2.5rem; color: var(--text-label);">Share your vision for our school. Creative, constructive, and forward-thinking ideas only.</p>
             
             <form id="idea-form" class="card form-container">
                 <div class="form-group">
-                    <label>Title of Idea (Max 60 chars)</label>
-                    <input type="text" id="i-title" maxlength="60" required>
+                    <label>Title of Idea</label>
+                    <input type="text" id="i-title" maxlength="60" required placeholder="Give your idea a catchy name">
                 </div>
                 <div class="form-group">
-                    <label>Description (Max 300 chars)</label>
-                    <textarea id="i-desc" rows="3" maxlength="300" required></textarea>
+                    <label>The Big Vision</label>
+                    <textarea id="i-desc" rows="4" maxlength="300" required placeholder="Describe how this change will benefit everyone..."></textarea>
                 </div>
-                <div class="form-group">
-                    <label>Category</label>
-                    <select id="i-category">
-                        <option value="Academic">Academic</option>
-                        <option value="Facilities">Facilities</option>
-                        <option value="Events">Events</option>
-                        <option value="Wellbeing">Wellbeing</option>
-                        <option value="Other">Other</option>
-                    </select>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="i-category">
+                            <option value="Academic">Academic</option>
+                            <option value="Facilities">Facilities</option>
+                            <option value="Events">Events</option>
+                            <option value="Wellbeing">Wellbeing</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Impact Level</label>
+                        <select id="i-impact">
+                            <option value="Small Win">Small Win</option>
+                            <option value="Medium Change">Medium Change</option>
+                            <option value="Big Vision">Big Vision</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Impact Level</label>
-                    <select id="i-impact">
-                        <option value="Small Win">Small Win</option>
-                        <option value="Medium Change">Medium Change</option>
-                        <option value="Big Vision">Big Vision</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-secondary w-100">Submit Idea</button>
+                <button type="submit" class="btn btn-secondary w-100" style="margin-top: 1rem;"><i data-lucide="rocket"></i> Launch Idea</button>
                 <p id="idea-result" class="result-msg"></p>
             </form>
 
-            <h3 style="margin-top: 4rem; margin-bottom: 1.5rem;"><i data-lucide="star"></i> Featured Ideas</h3>
-            <div id="featured-ideas-list">Loading...</div>
+            <h3 style="margin-top: 5rem; margin-bottom: 2rem;"><i data-lucide="star" class="text-fire"></i> Featured Community Ideas</h3>
+            <div id="featured-ideas-list" class="features">Loading...</div>
         </section>
 
         <!-- Lost & Found Page -->
         <section id="lost-found" class="page">
-            <h2><i data-lucide="search"></i> Lost & Found</h2>
-            <p style="margin-bottom: 2rem;">Auto-expires after 14 days.</p>
+            <h2><i data-lucide="search"></i> Lost & Found Hub</h2>
+            <p style="margin-bottom: 2.5rem; color: var(--text-label);">A community-driven board to reconnect you with your items.</p>
             
-            <div class="card form-container card-info" style="margin-bottom: 2rem;">
+            <div class="card form-container card-info" style="margin-bottom: 4rem;">
                 <form id="lf-form">
                     <div class="form-group">
-                        <label>Type</label>
-                        <select id="lf-type"><option value="Lost">I Lost Something</option><option value="Found">I Found Something</option></select>
+                        <label>Post Type</label>
+                        <select id="lf-type">
+                            <option value="Lost">I Lost Something</option>
+                            <option value="Found">I Found Something</option>
+                        </select>
                     </div>
-                    <div class="form-group"><label>Item Name</label><input type="text" id="lf-item" required></div>
-                    <div class="form-group"><label>Location</label><input type="text" id="lf-loc" required></div>
-                    <div class="form-group"><label>Description (100 chars)</label><input type="text" id="lf-desc" maxlength="100" required></div>
-                    <div class="form-group"><label>Contact (Optional)</label><input type="text" id="lf-contact" placeholder="e.g. ask 9B"></div>
-                    <button type="submit" class="btn btn-primary w-100">Post Item</button>
+                    <div class="form-group"><label>Item Name</label><input type="text" id="lf-item" required placeholder="e.g. Blue Water Bottle"></div>
+                    <div class="form-group"><label>Last Seen / Found Location</label><input type="text" id="lf-loc" required placeholder="e.g. Room 402, Playground"></div>
+                    <div class="form-group"><label>Description</label><input type="text" id="lf-desc" maxlength="100" required placeholder="Any unique identifiers?"></div>
+                    <div class="form-group"><label>Contact Method (Optional)</label><input type="text" id="lf-contact" placeholder="e.g. Drop at Reception, See 9B"></div>
+                    <button type="submit" class="btn btn-primary w-100"><i data-lucide="plus-circle"></i> Post to Board</button>
                     <p id="lf-result" class="result-msg"></p>
                 </form>
             </div>
 
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchLFTab('Lost')">Lost Items</button>
-                <button class="tab-btn" onclick="switchLFTab('Found')">Found Items</button>
+            <div class="tabs" style="justify-content: center; border: none; background: #f1f5f9; padding: 0.5rem; border-radius: 16px; margin-bottom: 3rem; width: fit-content; margin-left: auto; margin-right: auto;">
+                <button class="tab-btn active" onclick="switchLFTab('Lost')" style="padding: 0.75rem 2rem; border-radius: 12px; border: none;">Lost Items</button>
+                <button class="tab-btn" onclick="switchLFTab('Found')" style="padding: 0.75rem 2rem; border-radius: 12px; border: none;">Found Items</button>
             </div>
-            <div id="lf-list">Loading...</div>
+            <div id="lf-list" class="features">Loading...</div>
         </section>
 
         <!-- Study Groups Page -->
@@ -340,32 +355,38 @@
     <footer>
         <div class="footer-content">
             <div class="footer-col">
-                <h4>Quick Links</h4>
-                <a href="#home" onclick="navigate('home')">Home</a>
-                <a href="#about" onclick="navigate('about')">About Amogh</a>
-                <a href="#manifesto" onclick="navigate('manifesto')">Manifesto</a>
+                <div class="logo" style="margin-bottom: 2rem;">
+                    <img src="/static/images/scislogo-removebg-preview.png" alt="School Logo" style="height: 50px; width: auto; filter: brightness(0) invert(1); opacity: 0.8;">
+                    <span class="brand">Fire & Ice</span>
+                </div>
+                <p style="font-size: 0.9rem; line-height: 1.8;">Bringing the balance of action and empathy to school leadership. Vote for Amogh for a better, safer, and more transparent future.</p>
             </div>
             <div class="footer-col">
-                <h4>Engage</h4>
-                <a href="#polls" onclick="navigate('polls')">Polls</a>
-                <a href="#idea-box" onclick="navigate('idea-box')">Idea Box</a>
-                <a href="#feedback" onclick="navigate('feedback')">Speak Anonymously</a>
+                <h4>Quick Access</h4>
+                <a href="#home" onclick="navigate('home')">Home Page</a>
+                <a href="#about" onclick="navigate('about')">About the Candidate</a>
+                <a href="#manifesto" onclick="navigate('manifesto')">Our Manifesto</a>
+                <a href="/admin">Team Portal</a>
             </div>
             <div class="footer-col">
-                <h4>Track & Progress</h4>
+                <h4>Engagement</h4>
+                <a href="#polls" onclick="navigate('polls')">Active Polls</a>
+                <a href="#idea-box" onclick="navigate('idea-box')">Submit an Idea</a>
+                <a href="#feedback" onclick="navigate('feedback')">Anonymous Feedback</a>
+            </div>
+            <div class="footer-col">
+                <h4>Support & Tools</h4>
                 <a href="#track" onclick="navigate('track')">Universal Tracker</a>
-                <a href="#progress" onclick="navigate('progress')">Task Board</a>
+                <a href="#progress" onclick="navigate('progress')">Campaign Progress</a>
                 <a href="#lost-found" onclick="navigate('lost-found')">Lost & Found</a>
                 <a href="#study-groups" onclick="navigate('study-groups')">Study Groups</a>
-                <a href="/admin">Admin Portal</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <div style="display:flex; align-items:center; gap:8px;">
-                Built by the <span class="footer-brand">Fire & Ice</span> team <i data-lucide="flame" size="16" class="text-fire"></i><i data-lucide="snowflake" size="16" class="text-ice"></i>
+            <div>&copy; 2026 The Fire & Ice Campaign. Built with <i data-lucide="heart" size="14" class="text-fire"></i> for the students.</div>
+            <div style="display: flex; gap: 2rem; align-items: center;">
+                <a href="#" onclick="window.location.replace('https://www.google.com')" style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; opacity: 0.7;"><i data-lucide="log-out" size="16"></i> Secure Exit</a>
             </div>
-            <div>&copy; 2026 Vote for Amogh. All rights reserved.</div>
-            <a href="#" onclick="window.location.replace('https://www.google.com')" style="color:#888888; text-decoration:none; display:flex; align-items:center; gap:4px;"><i data-lucide="log-out" size="14"></i> Quick Exit</a>
         </div>
     </footer>
 
