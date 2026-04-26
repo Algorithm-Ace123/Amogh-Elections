@@ -6,20 +6,119 @@
     <title>Admin - Fire & Ice</title>
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="/static/images/scislogo-removebg-preview.png" type="image/png">
     <style>
+        :root {
+            --admin-bg: #f8fafc;
+            --admin-sidebar: #ffffff;
+            --admin-accent: var(--ice-color);
+        }
+
+        body {
+            background-color: var(--admin-bg);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            box-shadow: var(--shadow-sm);
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
         .admin-layout { display: none; }
-        .login-layout { display: block; max-width: 400px; margin: 4rem auto; text-align: center; }
-        .table-responsive { overflow-x: auto; margin-top: 1rem; }
+        
+        /* Centered Login */
+        #login-section {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 420px;
+            padding: 3rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        #login-section h2 {
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        /* Dashboard UI */
+        .admin-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 1rem;
+            background: #f8fafc;
+            color: var(--text-label);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .data-table td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .data-table tr:hover {
+            background-color: #fcfcfc;
+        }
+
+        .data-table tr.spam-row {
+            background-color: #fff1f2 !important;
+            opacity: 0.8;
+        }
+
+        .table-responsive {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Sidebar/Response Panel */
+        #response-panel {
+            background: white;
+            border-left: 4px solid var(--ice-color);
+            transition: var(--transition);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .admin-tab-content h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.75rem;
+        }
+
+        .success-text { color: #22c55e; font-weight: 600; font-size: 0.9rem; }
+        .error-text { color: #ef4444; font-weight: 600; font-size: 0.9rem; }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="logo">
-            <span class="school-logo">🛡️</span>
-            <span class="brand">Admin Dashboard</span>
+            <img src="/static/images/scislogo-removebg-preview.png" alt="School Logo" height="32">
+            <span class="brand">Admin Center</span>
         </div>
         <ul class="nav-links admin-layout">
-            <li><a href="#" onclick="logout()" style="color: var(--fire-color);">Logout</a></li>
+            <li><button onclick="logout()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-color: var(--fire-color); color: var(--fire-color);">Logout</button></li>
         </ul>
     </nav>
 
@@ -39,12 +138,13 @@
         <!-- Admin Dashboard -->
         <section id="dashboard-section" class="admin-layout" style="max-width: 1200px; margin: 2rem auto; padding: 1rem;">
             
-            <div class="tabs progress-tabs" id="admin-tabs" style="margin-bottom: 2rem; display:flex; gap:1rem;">
-                <button class="tab-btn active" onclick="switchAdminTab('submissions')"><i data-lucide="inbox"></i> Submissions</button>
-                <button class="tab-btn" onclick="switchAdminTab('polls')"><i data-lucide="bar-chart-2"></i> Polls Manager</button>
-                <button class="tab-btn" onclick="switchAdminTab('tasks')"><i data-lucide="trello"></i> Task Control</button>
-                <button class="tab-btn" onclick="switchAdminTab('announcements')"><i data-lucide="bell"></i> Announcements</button>
-                <button class="tab-btn" onclick="switchAdminTab('filter')"><i data-lucide="shield-alert"></i> Filter Logs</button>
+            <div class="tabs progress-tabs" id="admin-tabs" style="margin-bottom: 3rem;">
+                <button class="tab-btn active" onclick="switchAdminTab('submissions', this)"><i data-lucide="inbox"></i> Submissions</button>
+                <button class="tab-btn" onclick="switchAdminTab('polls', this)"><i data-lucide="bar-chart-2"></i> Polls Manager</button>
+                <button class="tab-btn" onclick="switchAdminTab('tasks', this)"><i data-lucide="layout"></i> Task Control</button>
+                <button class="tab-btn" onclick="switchAdminTab('announcements', this)"><i data-lucide="bell"></i> Announcements</button>
+                <button class="tab-btn" onclick="switchAdminTab('pulse', this)"><i data-lucide="activity"></i> Pulse Issues</button>
+                <button class="tab-btn" onclick="switchAdminTab('filter', this)"><i data-lucide="shield-alert"></i> Filter Logs</button>
             </div>
 
             <!-- Manage Submissions -->
@@ -76,16 +176,22 @@
                     </div>
                     
                     <!-- Slide-out Side Panel for Responses -->
-                    <div id="response-panel" class="card card-info" style="width:350px; display:none; flex-direction:column; position:sticky; top:2rem; max-height:calc(100vh - 4rem); overflow-y:auto;">
+                    <div id="response-panel" class="card card-info" style="width:400px; display:none; flex-direction:column; position:sticky; top:2rem; max-height:calc(100vh - 4rem); overflow-y:auto; padding: 2rem;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                            <h3 id="panel-title">Respond to Case</h3>
+                            <h3 id="panel-title" style="margin:0;">Respond to Case</h3>
                             <button class="btn" style="background:transparent; padding:4px;" onclick="closeResponsePanel()"><i data-lucide="x"></i></button>
                         </div>
-                        <p class="text-sm text-muted" id="panel-desc" style="margin-bottom:1.5rem;"></p>
+                        
+                        <!-- Full Details View -->
+                        <div style="background: #f8fafc; padding: 1.25rem; border-radius: 12px; margin-bottom: 2rem; border: 1px solid #e2e8f0;">
+                            <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-label); text-transform: uppercase;">Full Submission Details</span>
+                            <p id="panel-desc" style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6; color: var(--text-heading); white-space: pre-wrap;"></p>
+                        </div>
                         
                         <form id="response-form">
                             <input type="hidden" id="r-table">
                             <input type="hidden" id="r-id">
+                            <input type="hidden" id="r-db-id">
                             
                             <div class="form-group">
                                 <label>Priority</label>
@@ -108,7 +214,8 @@
                                 <label>Public Response</label>
                                 <textarea id="r-response" rows="5" placeholder="Enter response visible to student..."></textarea>
                             </div>
-                            <button type="submit" class="btn btn-secondary w-100">Update Submission</button>
+                            <button type="submit" class="btn btn-primary w-100" style="margin-bottom: 1rem;">Update Submission</button>
+                            <button type="button" class="btn btn-secondary w-100" style="border-color: #ef4444; color: #ef4444;" onclick="deleteSubmission()">Delete Submission</button>
                             <p id="r-result" class="result-msg"></p>
                         </form>
                     </div>
@@ -122,8 +229,8 @@
                         <h2>Polls Manager</h2>
                         <div class="card table-responsive" style="margin-top:1rem;">
                             <table class="data-table">
-                                <thead><tr><th>Poll</th><th>Type</th><th>Status</th><th>Total Votes</th></tr></thead>
-                                <tbody id="polls-table-body"><tr><td colspan="4">Loading...</td></tr></tbody>
+                                <thead><tr><th>Poll</th><th>Type</th><th>Status</th><th>Total Votes</th><th>Action</th></tr></thead>
+                                <tbody id="polls-table-body"><tr><td colspan="5">Loading...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
@@ -159,41 +266,90 @@
 
             <!-- Task Control -->
             <div id="tab-tasks" class="admin-tab-content" style="display:none;">
-                <div style="display:flex; gap:2rem;">
-                    <div style="flex:1;">
+                <div style="display:flex; gap:2rem; align-items:flex-start;">
+                    <div style="flex:1; min-width:0;">
                         <h2>Task Control</h2>
                         <div class="card table-responsive" style="margin-top:1rem;">
                             <table class="data-table">
-                                <thead><tr><th>Title</th><th>Focus Area</th><th>Status</th><th>Assignee</th><th>Action</th></tr></thead>
+                                <thead><tr><th>Task</th><th>Progress</th><th>Status</th><th>Assignee</th><th>Action</th></tr></thead>
                                 <tbody id="tasks-table-body"><tr><td colspan="5">Loading...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
-                    <div class="card" style="width:350px;">
-                        <h3>Create Task</h3>
-                        <form id="create-task-form" style="margin-top:1rem;">
-                            <div class="form-group"><label>Title</label><input type="text" id="tk-title" required></div>
-                            <div class="form-group"><label>Focus Area</label><input type="text" id="tk-focus" placeholder="e.g. Student Safety" required></div>
+                    <!-- Unified Create / Edit Panel -->
+                    <div class="card" id="task-panel" style="width:380px; flex-shrink:0; position:sticky; top:2rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                            <h3 id="task-panel-title" style="margin:0;">Create Task</h3>
+                            <button type="button" id="task-panel-new-btn" onclick="resetTaskPanel()" style="display:none; font-size:0.8rem; padding:4px 10px;" class="btn btn-secondary">+ New</button>
+                        </div>
+                        <form id="task-form">
+                            <input type="hidden" id="tk-edit-id">
+                            <div class="form-group"><label>Title</label><input type="text" id="tk-title" required placeholder="e.g. Improve Cafeteria Queue"></div>
+                            <div class="form-group"><label>Focus Area</label><input type="text" id="tk-focus" required placeholder="e.g. Student Welfare"></div>
                             <div class="form-group"><label>Assignee</label><input type="text" id="tk-assignee" placeholder="e.g. Amogh"></div>
-                            <div class="form-group"><label>Status</label><select id="tk-status"><option value="Planned">Planned</option><option value="In Progress">In Progress</option><option value="Blocked">Blocked</option><option value="Completed">Completed</option></select></div>
-                            <div class="form-group"><label>Subtasks (Comma separated)</label><input type="text" id="tk-subtasks"></div>
-                            <button type="submit" class="btn btn-secondary w-100">Create Task</button>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select id="tk-status">
+                                    <option value="Planned">Planned</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Blocked">Blocked</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                            <!-- CREATE mode: comma-separated input -->
+                            <div id="tk-create-subtasks" class="form-group">
+                                <label>Subtasks <small style="color:var(--text-label);font-weight:400;">(comma separated)</small></label>
+                                <input type="text" id="tk-subtasks-input" placeholder="e.g. Research, Draft, Present">
+                            </div>
+                            <!-- EDIT mode: checklist + add input -->
+                            <div id="tk-edit-subtasks" style="display:none;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                                    <label style="margin:0;">Subtask Progress</label>
+                                    <span id="tk-progress-text" style="font-size:0.8rem; font-weight:600; color:var(--ice-color);"></span>
+                                </div>
+                                <div style="height:8px; background:#e2e8f0; border-radius:99px; overflow:hidden; margin-bottom:1rem;">
+                                    <div id="tk-progress-bar" style="height:100%; background:var(--ice-color); border-radius:99px; transition:width 0.4s ease;"></div>
+                                </div>
+                                <div id="tk-subtasks-checklist" style="display:flex;flex-direction:column;gap:0.4rem;max-height:220px;overflow-y:auto;margin-bottom:0.75rem;"></div>
+                                <div style="display:flex; gap:0.5rem;">
+                                    <input type="text" id="tk-new-subtask" placeholder="Add a subtask..." style="flex:1; font-size:0.85rem;">
+                                    <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:0.8rem;flex-shrink:0;" onclick="addSubtaskInline()">Add</button>
+                                </div>
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:1.5rem;">
+                                <button type="submit" class="btn btn-primary w-100" id="tk-submit-btn">Create Task</button>
+                                <button type="button" class="btn w-100" id="tk-delete-btn" onclick="deleteTaskFromPanel()" style="display:none;border-color:#ef4444;color:#ef4444;">Delete Task</button>
+                            </div>
                             <p id="tk-result" class="result-msg"></p>
                         </form>
                     </div>
                 </div>
             </div>
 
-            <!-- Announcements -->
-            <div id="tab-announcements" class="admin-tab-content" style="display:none; max-width:600px; margin:0 auto;">
-                <h2>Post Announcement</h2>
-                <div class="card form-container" style="margin-top:1rem;">
-                    <form id="announcement-form">
-                        <div class="form-group"><label>Title</label><input type="text" id="a-title" required></div>
-                        <div class="form-group"><label>Description</label><textarea id="a-desc" rows="3" required></textarea></div>
-                        <button type="submit" class="btn btn-primary w-100">Post Announcement</button>
-                        <p id="announcement-msg" class="result-msg"></p>
-                    </form>
+            <div id="tab-announcements" class="admin-tab-content" style="display:none;">
+                <div style="display:flex; gap:2rem; align-items:flex-start;">
+                    <div class="card" style="width:380px; flex-shrink:0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <h3 id="ann-form-title" style="margin:0;">Post Announcement</h3>
+                            <button type="button" id="ann-cancel-edit" onclick="resetAnnouncementForm()" style="display:none; font-size:0.8rem; padding:4px 10px;" class="btn btn-secondary">+ New</button>
+                        </div>
+                        <form id="announcement-form">
+                            <input type="hidden" id="a-edit-id">
+                            <div class="form-group"><label>Title</label><input type="text" id="a-title" placeholder="e.g. New Safety Measures" required></div>
+                            <div class="form-group"><label>Description</label><textarea id="a-desc" rows="4" placeholder="Enter the full announcement details..." required></textarea></div>
+                            <button type="submit" class="btn btn-primary w-100" id="ann-submit-btn">Broadcast Announcement</button>
+                            <p id="announcement-msg" class="result-msg"></p>
+                        </form>
+                    </div>
+                    <div style="flex:1;">
+                        <h3>Existing Announcements</h3>
+                        <div class="card table-responsive" style="margin-top:1rem;">
+                            <table class="data-table">
+                                <thead><tr><th>Date</th><th>Title</th><th>Description</th><th>Actions</th></tr></thead>
+                                <tbody id="announcements-table-body"><tr><td colspan="4">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -217,9 +373,33 @@
                 </div>
             </div>
 
+            <!-- Pulse Issues Manager -->
+            <div id="tab-pulse" class="admin-tab-content" style="display:none;">
+                <div style="display:flex; gap:2rem; align-items:flex-start;">
+                    <div style="flex:1;">
+                        <h2>Community Pulse Issues</h2>
+                        <div class="card table-responsive" style="margin-top:1rem;">
+                            <table class="data-table">
+                                <thead><tr><th>Title</th><th>Description</th><th>Votes</th><th>Delete</th></tr></thead>
+                                <tbody id="pulse-table-body"><tr><td colspan="4">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card" style="width:350px; flex-shrink:0;">
+                        <h3>Create Pulse Issue</h3>
+                        <form id="create-pulse-form" style="margin-top:1rem;">
+                            <div class="form-group"><label>Issue Title</label><input type="text" id="pulse-title" required placeholder="e.g. Better cafeteria options"></div>
+                            <div class="form-group"><label>Description (Optional)</label><textarea id="pulse-desc" rows="3" placeholder="Brief description of the issue..."></textarea></div>
+                            <button type="submit" class="btn btn-primary w-100">Add Pulse Issue</button>
+                            <p id="pulse-result" class="result-msg"></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </section>
     </main>
 
-    <script src="/static/admin.js"></script>
+    <script src="/static/admin.js?v=3"></script>
 </body>
 </html>

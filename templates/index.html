@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="icon" href="/static/images/scislogo-removebg-preview.png" type="image/png">
 </head>
 <body>
     <nav class="navbar">
@@ -31,13 +32,12 @@
                 <a href="#" class="nav-link">Track <i data-lucide="chevron-down" size="14"></i></a>
                 <div class="dropdown-content">
                     <a href="#track" class="nav-link" data-page="track"><i data-lucide="search"></i> Universal Tracker</a>
-                    <a href="#action-board" class="nav-link" data-page="action-board"><i data-lucide="list"></i> Action Board</a>
                 </div>
             </li>
             <li class="dropdown">
                 <a href="#" class="nav-link">Progress <i data-lucide="chevron-down" size="14"></i></a>
                 <div class="dropdown-content">
-                    <a href="#progress" class="nav-link" data-page="progress"><i data-lucide="trello"></i> Task Board</a>
+                    <a href="#progress" class="nav-link" data-page="progress"><i data-lucide="layout"></i> Task Board</a>
                     <a href="#announcements" class="nav-link" data-page="announcements"><i data-lucide="bell"></i> Announcements</a>
                 </div>
             </li>
@@ -48,34 +48,46 @@
         <!-- Home Page -->
         <section id="home" class="page active">
             <div class="hero">
-                <h1>Vote for <span class="text-fire">Amogh</span>.<br>Vote for <span class="brand">Fire & Ice</span>.</h1>
+                <h1 class="hero-title">
+                    <span class="hero-line1">Vote for <span class="text-fire">Amogh</span>.</span>
+                    <span class="hero-line2">Vote for <span class="brand">Fire & Ice</span>.</span>
+                </h1>
                 <p class="slogan">"<span class="slogan-fire">Fire to act.</span> <span class="slogan-ice">Ice to listen.</span>"</p>
                 <div class="hero-buttons">
                     <button class="btn btn-primary" onclick="navigate('feedback')"><i data-lucide="message-circle"></i> Speak Anonymously</button>
-                    <button class="btn btn-secondary" onclick="navigate('support')"><i data-lucide="heart"></i> Support Campaign</button>
                 </div>
                 
                 <div class="quick-links">
+                    <a href="#polls" onclick="navigate('polls')" class="quick-link-btn"><i data-lucide="bar-chart-2"></i> Polls</a>
                     <a href="#idea-box" onclick="navigate('idea-box')" class="quick-link-btn"><i data-lucide="lightbulb"></i> Idea Box</a>
-                    <a href="#lost-found" onclick="navigate('lost-found')" class="quick-link-btn"><i data-lucide="search"></i> Lost & Found</a>
-                    <a href="#study-groups" onclick="navigate('study-groups')" class="quick-link-btn"><i data-lucide="users"></i> Study Groups</a>
+                    <a href="#track" onclick="navigate('track')" class="quick-link-btn"><i data-lucide="search"></i> Universal Tracker</a>
+                    <a href="#progress" onclick="navigate('progress')" class="quick-link-btn"><i data-lucide="layout"></i> Task Board</a>
                 </div>
             </div>
 
             <div class="features">
-                <div class="card card-info">
-                    <h3><i data-lucide="trending-up" class="text-ice"></i> Pulse Snapshot</h3>
-                    <p style="font-size: 0.95rem; margin-bottom: 1.5rem; color: var(--text-label);">Top priority issues voted by students</p>
-                    <div id="home-pulse-snapshot">Loading...</div>
-                    <button class="btn btn-secondary w-100" style="margin-top: 2rem;" onclick="navigate('polls')">Vote in Polls</button>
+                <div class="card card-urgent" style="text-align: left;">
+                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: rgba(239, 68, 68, 0.1); border-radius: 12px; margin-bottom: 1.5rem;">
+                        <i data-lucide="shield" class="text-fire" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <h3 style="margin-bottom: 0.75rem; font-size: 1.25rem;">Speak Without Fear</h3>
+                    <p style="color: var(--text-body); line-height: 1.6;">Submit anonymous grievances and feedback. We ensure every voice is heard without fear of judgment. Your identity is fully protected.</p>
                 </div>
-                <div class="card card-urgent">
-                    <h3><i data-lucide="zap" class="text-fire"></i> Action Driven</h3>
-                    <p>We believe in swift actions, transparency, and getting things done for the community.</p>
+                
+                <div class="card card-info" style="text-align: left;">
+                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: rgba(56, 189, 248, 0.1); border-radius: 12px; margin-bottom: 1.5rem;">
+                        <i data-lucide="eye" class="text-ice" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <h3 style="margin-bottom: 0.75rem; font-size: 1.25rem;">Radical Transparency</h3>
+                    <p style="color: var(--text-body); line-height: 1.6;">Track the real-time status of your submissions with our Universal Tracker. No more empty promises—see exactly what actions we are taking.</p>
                 </div>
-                <div class="card card-info">
-                    <h3><i data-lucide="snowflake" class="text-ice"></i> Empathetic</h3>
-                    <p>We provide a safe, calm space to listen to your concerns and act on them with care.</p>
+                
+                <div class="card" style="text-align: left; border: 1px solid #e2e8f0;">
+                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #f1f5f9; border-radius: 12px; margin-bottom: 1.5rem;">
+                        <i data-lucide="lightbulb" style="color: #64748b; width: 24px; height: 24px;"></i>
+                    </div>
+                    <h3 style="margin-bottom: 0.75rem; font-size: 1.25rem;">Your Voice Matters</h3>
+                    <p style="color: var(--text-body); line-height: 1.6;">Got a brilliant idea for the school? Share it in our Idea Box. The best community-driven ideas will be adopted into our core manifesto.</p>
                 </div>
             </div>
         </section>
@@ -193,26 +205,35 @@
         <!-- Progress (Task Board) Page -->
         <section id="progress" class="page">
             <div class="progress-header">
-                <h2><i data-lucide="trello"></i> What We're Building</h2>
+                <h2><i data-lucide="layout"></i> What We're Building</h2>
                 <p class="subtitle">Full transparency on every commitment we've made and every action we're taking.</p>
                 <p class="last-updated">Last updated: <span id="progress-last-updated">Just now</span></p>
             </div>
             
-            <div class="card card-info overall-progress">
-                <h3>Campaign Commitments — Overall Progress</h3>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill gradient-fire-ice" id="overall-progress-bar" style="width: 0%;"></div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-completed">0</span>
+                    <span class="stat-label">Completed</span>
                 </div>
-                <div class="progress-stats">
-                    <span class="stat-pill completed" id="stat-completed">0 Completed</span>
-                    <span class="stat-pill in-progress" id="stat-in-progress">0 In Progress</span>
-                    <span class="stat-pill planned" id="stat-planned">0 Planned</span>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-in-progress">0</span>
+                    <span class="stat-label">In Progress</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-planned">0</span>
+                    <span class="stat-label">Planned</span>
                 </div>
             </div>
 
-            <div class="board-controls">
-                <button class="btn btn-secondary" id="toggle-timeline-btn" onclick="toggleTimeline()"><i data-lucide="calendar"></i> Switch to Timeline</button>
+            <div class="card overall-progress" style="margin-bottom: 3rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h3 style="margin:0;">Campaign Commitments — Overall Progress</h3>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="overall-progress-bar" style="width: 0%;"></div>
+                </div>
             </div>
+
 
             <div class="tabs progress-tabs" id="progress-tabs-container">
                 <button class="tab-btn active" onclick="switchProgressTab('Student Safety')"><i data-lucide="shield-check"></i> Student Safety</button>
@@ -225,10 +246,6 @@
             <div id="progress-board-view">
                 <!-- Tab specific progress and task list loaded here -->
             </div>
-            <div id="progress-timeline-view" style="display: none;">
-                <!-- Gantt chart view loaded here -->
-            </div>
-
             <h3 style="margin-top: 4rem; margin-bottom: 1.5rem;"><i data-lucide="award"></i> Recently Completed</h3>
             <div id="wins-wall" class="wins-grid">
                 <!-- Completed tasks loaded here -->
@@ -392,8 +409,6 @@
 
     <button class="quick-exit" onclick="window.location.replace('https://www.google.com')" title="Leave this page instantly"><i data-lucide="x" size="16"></i> Quick Exit</button>
 
-    <script src="/static/wordlist.js"></script>
-    <script src="/static/filter.js"></script>
     <script src="/static/app.js"></script>
     <script>
         lucide.createIcons();

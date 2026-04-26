@@ -170,10 +170,16 @@ def admin_update_feedback(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/admin/announcements', methods=['POST'])
-def admin_post_announcement():
+@app.route('/api/admin/announcements', methods=['GET', 'POST'])
+def admin_announcements():
     if not is_admin():
         return jsonify({"error": "Unauthorized"}), 401
+    if request.method == 'GET':
+        try:
+            response = supabase.table("announcements").select("*").order("date", desc=True).execute()
+            return jsonify(response.data), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
     data = request.json
     title = data.get('title')
     description = data.get('description')
@@ -184,6 +190,25 @@ def admin_post_announcement():
         return jsonify({"success": True}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/announcements/<ann_id>', methods=['PUT', 'DELETE'])
+def admin_edit_delete_announcement(ann_id):
+    if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
+    if request.method == 'DELETE':
+        try:
+            supabase.table("announcements").delete().eq("id", ann_id).execute()
+            return jsonify({"success": True}), 200
+        except Exception as e: return jsonify({"error": str(e)}), 500
+    # PUT
+    data = request.json
+    title = data.get('title')
+    description = data.get('description')
+    if not title or not description:
+        return jsonify({"error": "Title and description required"}), 400
+    try:
+        supabase.table("announcements").update({"title": title, "description": description}).eq("id", ann_id).execute()
+        return jsonify({"success": True}), 200
+    except Exception as e: return jsonify({"error": str(e)}), 500
 
 # ----- NEW FEATURES -----
 
@@ -207,6 +232,25 @@ def vote_pulse(issue_id):
         return jsonify({"success": True}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/pulse', methods=['POST'])
+def admin_create_pulse():
+    if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
+    data = request.json
+    issue_name = data.get('issue_name')
+    if not issue_name: return jsonify({"error": "Issue name required"}), 400
+    try:
+        supabase.table("pulse").insert({"issue_name": issue_name, "votes": 0}).execute()
+        return jsonify({"success": True}), 200
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/pulse/<pulse_id>', methods=['DELETE'])
+def admin_delete_pulse(pulse_id):
+    if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
+    try:
+        supabase.table("pulse").delete().eq("id", pulse_id).execute()
+        return jsonify({"success": True}), 200
+    except Exception as e: return jsonify({"error": str(e)}), 500
 
 @app.route('/api/ideas', methods=['POST'])
 def submit_idea():
@@ -324,11 +368,10 @@ def admin_update_submission(table_name, id):
     update_data = {}
     
     # Mapping of tables to their verified columns based on current database state
-    # This prevents 'PGRST204' errors (column not found)
     table_columns = {
-        "feedback": ["status"], # Missing: admin_response, priority
-        "ideas": ["status"],    # Missing: admin_response, priority
-        "lost_found": [],       # Missing: status, admin_response, priority
+        "feedback": ["status"],
+        "ideas": ["status"],
+        "lost_found": [],
         "study_groups": []
     }
     
@@ -342,20 +385,25 @@ def admin_update_submission(table_name, id):
         update_data['response_timestamp'] = datetime.utcnow().isoformat()
         
     if 'priority' in data and 'priority' in allowed_cols: 
-        # Handle boolean conversion if necessary, but currently priority is missing
         update_data['priority'] = data['priority']
     
     try:
         if update_data:
             supabase.table(table_name).update(update_data).eq("id", id).execute()
-            return jsonify({"success": True}), 200
-        else:
-            # If no valid columns to update, still return success to avoid frontend error
-            # but log it for the developer
-            print(f"Warning: No valid columns to update for table {table_name}")
-            return jsonify({"success": True, "warning": "No columns updated"}), 200
+        return jsonify({"success": True}), 200
     except Exception as e:
-        print(f"Update Error for {table_name}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/submissions/<table_name>/<id>', methods=['DELETE'])
+def admin_delete_submission(table_name, id):
+    if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
+    valid_tables = ["feedback", "ideas", "lost_found", "study_groups"]
+    if table_name not in valid_tables: return jsonify({"error": "Invalid table"}), 400
+    
+    try:
+        supabase.table(table_name).delete().eq("id", id).execute()
+        return jsonify({"success": True}), 200
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/polls', methods=['GET', 'POST'])
@@ -389,6 +437,15 @@ def manage_polls():
                 supabase.table("poll_options").insert(opts).execute()
             return jsonify({"success": True}), 200
         except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/polls/<poll_id>', methods=['DELETE'])
+def admin_delete_poll(poll_id):
+    if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
+    try:
+        supabase.table("poll_options").delete().eq("poll_id", poll_id).execute()
+        supabase.table("polls").delete().eq("id", poll_id).execute()
+        return jsonify({"success": True}), 200
+    except Exception as e: return jsonify({"error": str(e)}), 500
 
 @app.route('/api/polls/vote', methods=['POST'])
 def vote_poll():
@@ -471,6 +528,35 @@ def manage_tasks():
                         supabase.table("subtasks").update({"is_completed": st.get("is_completed", False)}).eq("id", st['id']).execute()
             return jsonify({"success": True}), 200
         except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/tasks/<task_id>', methods=['DELETE'])
+def admin_delete_task(task_id):
+    if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
+    try:
+        supabase.table("subtasks").delete().eq("task_id", task_id).execute()
+        supabase.table("tasks").delete().eq("id", task_id).execute()
+        return jsonify({"success": True}), 200
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/tasks/<task_id>/subtasks', methods=['POST'])
+def admin_add_subtask(task_id):
+    if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
+    title = request.json.get('title')
+    if not title: return jsonify({"error": "Title required"}), 400
+    try:
+        res = supabase.table("subtasks").insert({"task_id": task_id, "title": title, "is_completed": False}).execute()
+        return jsonify(res.data[0]), 200
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/tasks/<task_id>/details', methods=['PUT'])
+def admin_update_task_details(task_id):
+    if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
+    data = request.json
+    update = {k: v for k, v in data.items() if k in ['title', 'focus_area', 'assignee', 'status']}
+    try:
+        supabase.table("tasks").update(update).eq("id", task_id).execute()
+        return jsonify({"success": True}), 200
+    except Exception as e: return jsonify({"error": str(e)}), 500
 
 @app.route('/api/whitelist', methods=['GET'])
 def get_whitelist():

@@ -41,15 +41,7 @@ document.getElementById('feedback-form').addEventListener('submit', async (e) =>
         grade: document.getElementById('f-grade').value
     };
 
-    if (window.runFilter) {
-        const filterResult = window.runFilter(payload.message, "Feedback");
-        if (!filterResult.passed) {
-            resultMsg.innerHTML = `<span class="error-text">${filterResult.message}</span>`;
-            btn.disabled = false;
-            btn.textContent = "Submit Feedback";
-            return;
-        }
-    }
+
 
     try {
         const res = await fetch('/api/feedback', {
@@ -94,19 +86,26 @@ async function trackCase() {
             else if (prefix === 'LF') steps = ['Posted', 'Active', 'Claimed', 'Expired'];
             else if (prefix === 'SG') steps = ['Posted', 'Active', 'Matched', 'Expired'];
 
-            let currentIndex = steps.indexOf(data.status);
-            if (currentIndex === -1) currentIndex = 0; // Default fallback
+            // Fallback if status is missing or not in steps
+            let currentStatus = data.status || steps[0];
+            let currentIndex = steps.indexOf(currentStatus);
+            if (currentIndex === -1) currentIndex = 0;
 
             let stepperHtml = '<div class="stepper">';
             steps.forEach((step, idx) => {
                 let statusClass = 'pending';
                 let icon = '<div class="step-circle empty"></div>';
-                if (idx < currentIndex || data.status === 'Resolved' || data.status === 'Implemented' || data.status === 'Claimed' || data.status === 'Matched' || data.status === 'Expired') {
+                
+                // Logic for completed vs active vs pending
+                if (idx < currentIndex) {
                     statusClass = 'completed';
                     icon = '<div class="step-circle filled"><i data-lucide="check" size="14"></i></div>';
                 } else if (idx === currentIndex) {
                     statusClass = 'active';
                     icon = '<div class="step-circle pulsing"></div>';
+                } else {
+                    statusClass = 'pending';
+                    icon = `<div class="step-circle">${idx + 1}</div>`;
                 }
                 
                 stepperHtml += `
@@ -130,21 +129,38 @@ async function trackCase() {
                     </div>
                     <p>${data.admin_response}</p>
                 </div>
-            ` : `<p class="text-muted" style="margin-top: 1.5rem; text-align: center;">No updates yet. Check back soon.</p>`;
+            ` : `
+                <div class="admin-response-card" style="text-align: center; background: #f8fafc; border-style: dashed;">
+                    <p class="text-muted" style="margin:0;">No official update yet. Our team is currently reviewing this case.</p>
+                </div>
+            `;
 
-            let messagePreview = data.message || data.description || "";
-            messagePreview = messagePreview.substring(0, 100) + (messagePreview.length > 100 ? '...' : '');
+            // Enhanced message preview to handle all table types
+            let messagePreview = data.message || data.description || data.item_name || data.topic || data.subject || "No content details provided.";
+            if (messagePreview.length > 120) messagePreview = messagePreview.substring(0, 120) + '...';
 
             box.innerHTML = `
                 <div class="tracking-details">
-                    <span class="badge badge-info" style="margin-bottom: 1rem; display: inline-block;">${data.type_label}</span>
-                    <h3 style="margin-bottom: 0.5rem;">${caseId}</h3>
-                    <p class="text-muted text-sm" style="margin-bottom: 1rem;">Submitted: ${new Date(data.created_at || data.date_posted).toLocaleDateString()}</p>
-                    ${data.category ? `<p><strong>Category:</strong> ${data.category}</p>` : ''}
-                    <div class="message-preview">"${messagePreview}"</div>
+                    <span class="badge badge-ice" style="margin-bottom: 1.5rem; display: inline-block; padding: 6px 16px;">${data.type_label}</span>
+                    <h3 style="margin-bottom: 0.5rem; font-family: 'Outfit', sans-serif;">${caseId}</h3>
+                    <p class="text-muted text-sm" style="margin-bottom: 1.5rem;">Submitted on ${new Date(data.created_at || data.date_posted).toLocaleDateString()}</p>
+                    
+                    <div style="text-align: left; margin-bottom: 2rem;">
+                        ${data.category ? `<p style="margin-bottom:0.5rem;"><strong>Category:</strong> ${data.category}</p>` : ''}
+                        ${data.urgency ? `<p style="margin-bottom:0.5rem;"><strong>Urgency:</strong> ${data.urgency}</p>` : ''}
+                        <div class="message-preview">"${messagePreview}"</div>
+                    </div>
+
+                    <div style="margin: 2.5rem 0 1.5rem; text-align: left;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-label); letter-spacing: 0.1em;">PROGRESS STATUS</span>
+                    </div>
+                    ${stepperHtml}
+                    
+                    <div style="margin: 2.5rem 0 1rem; text-align: left; border-top: 1px solid #f1f5f9; padding-top: 2rem;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-label); letter-spacing: 0.1em;">OFFICIAL UPDATES</span>
+                    </div>
+                    ${adminResponse}
                 </div>
-                ${stepperHtml}
-                ${adminResponse}
             `;
             lucide.createIcons();
         } else {
@@ -360,13 +376,7 @@ document.getElementById('idea-form')?.addEventListener('submit', async (e) => {
         impact: document.getElementById('i-impact').value
     };
 
-    if (window.runFilter) {
-        const filterResult = window.runFilter(payload.description, "Idea Box");
-        if (!filterResult.passed) {
-            document.getElementById('idea-result').innerHTML = `<span class="error-text">${filterResult.message}</span>`;
-            return;
-        }
-    }
+
     try {
         const res = await fetch('/api/ideas', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
         const data = await res.json();
@@ -640,19 +650,19 @@ async function loadTasks() {
         
         const pct = total > 0 ? (completed / total) * 100 : 0;
         document.getElementById('overall-progress-bar').style.width = pct + '%';
-        document.getElementById('stat-completed').textContent = completed + ' Completed';
-        document.getElementById('stat-in-progress').textContent = inProgress + ' In Progress';
-        document.getElementById('stat-planned').textContent = planned + ' Planned';
+        document.getElementById('stat-completed').textContent = completed;
+        document.getElementById('stat-in-progress').textContent = inProgress;
+        document.getElementById('stat-planned').textContent = planned;
         
         // Load Wins Wall
         const wins = allTasks.filter(t => t.status === 'Completed').sort((a,b) => new Date(b.completed_at) - new Date(a.completed_at)).slice(0, 4);
         document.getElementById('wins-wall').innerHTML = wins.map(w => `
-            <div class="card card-info" style="border-left: 4px solid var(--ice-color);">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <h4>${w.title}</h4>
-                    <span class="badge badge-ice" style="background:#4caf50; color:white;"><i data-lucide="check" size="12"></i> Done</span>
+            <div class="task-card">
+                <div class="task-meta">
+                    <span class="badge" style="background:#4caf50; color:white;"><i data-lucide="check" size="12"></i> Done</span>
                 </div>
-                ${w.impact_statement ? `<p class="text-sm" style="margin-top:0.5rem; color:var(--text-body);"><em>"${w.impact_statement}"</em></p>` : ''}
+                <h4>${w.title}</h4>
+                ${w.impact_statement ? `<p class="text-sm"><em>"${w.impact_statement}"</em></p>` : ''}
             </div>
         `).join('');
 
@@ -680,52 +690,61 @@ function renderTasksByFocus() {
     const pct = tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0;
 
     let html = `
-        <div class="card" style="margin-top: 2rem; margin-bottom: 2rem; background: var(--bg-color);">
-            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
-                <strong>${currentFocusArea} Progress</strong>
-                <span>${pct}%</span>
+        <div class="card" style="margin: 2rem 0; border: none; background: #f8fafc;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:1rem; align-items: center;">
+                <h3 style="margin:0;">${currentFocusArea} Focus</h3>
+                <span class="badge badge-ice">${pct}% Complete</span>
             </div>
-            <div class="progress-bar-container" style="height:12px;">
-                <div class="progress-bar-fill bg-ice" style="width:${pct}%"></div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width:${pct}%"></div>
             </div>
         </div>
-        <div class="task-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+        <div class="task-grid">
     `;
 
     tasks.forEach(t => {
         let statusBadge = '';
-        if (t.status === 'Planned') statusBadge = '<span class="badge" style="background:#e0e0e0; color:#333;">Planned</span>';
-        if (t.status === 'In Progress') statusBadge = '<span class="badge badge-ice" style="display:flex; align-items:center; gap:4px; background:var(--ice-color); color:white;"><div class="pulsing-dot" style="width:6px; height:6px; background:white; border-radius:50%; animation: pulse 1.5s infinite;"></div> In Progress</span>';
-        if (t.status === 'Completed') statusBadge = '<span class="badge" style="background:#4caf50; color:white;"><i data-lucide="check" size="12"></i> Completed</span>';
-        if (t.status === 'Blocked') statusBadge = '<span class="badge badge-fire" style="background:var(--fire-color); color:white;"><i data-lucide="alert-triangle" size="12"></i> Blocked</span>';
+        if (t.status === 'Planned') statusBadge = '<span class="badge" style="background:#f1f5f9; color:#64748b;">Planned</span>';
+        if (t.status === 'In Progress') statusBadge = '<span class="badge" style="display:flex; align-items:center; gap:6px; background:var(--ice-color); color:white;"><div class="pulsing-dot" style="width:6px; height:6px; background:white; border-radius:50%; animation: pulse 1.5s infinite;"></div> In Progress</span>';
+        if (t.status === 'Completed') statusBadge = '<span class="badge" style="background:#22c55e; color:white;"><i data-lucide="check" size="12"></i> Completed</span>';
+        if (t.status === 'Blocked') statusBadge = '<span class="badge" style="background:#ef4444; color:white;"><i data-lucide="alert-triangle" size="12"></i> Blocked</span>';
 
         let subtasksHtml = '';
         if (t.subtasks && t.subtasks.length > 0) {
             const stCompleted = t.subtasks.filter(st => st.is_completed).length;
+            const stPct = (stCompleted / t.subtasks.length) * 100;
             subtasksHtml = `
-                <div style="margin-top:1rem; border-top:1px solid #eee; padding-top:1rem;">
-                    <p class="text-sm text-muted" style="margin-bottom:0.5rem; font-size:0.8rem;">Subtasks (${stCompleted}/${t.subtasks.length})</p>
-                    <div class="progress-bar-container" style="height:4px; margin-bottom:0.5rem;">
-                        <div class="progress-bar-fill bg-ice" style="width:${(stCompleted/t.subtasks.length)*100}%"></div>
+                <div class="subtask-section">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                        <span style="font-size:0.75rem; font-weight:700; color:var(--text-label);">SUBTASKS</span>
+                        <span style="font-size:0.75rem; font-weight:700; color:var(--text-label);">${stCompleted}/${t.subtasks.length}</span>
                     </div>
-                    <ul style="list-style:none; padding:0; margin:0; font-size:0.85rem;">
-                        ${t.subtasks.map(st => `<li style="margin-bottom:0.2rem; ${st.is_completed?'text-decoration:line-through; color:#aaa;':''}"><i data-lucide="${st.is_completed?'check-square':'square'}" size="12" style="vertical-align:middle;"></i> ${st.title}</li>`).join('')}
+                    <div class="progress-bar-container" style="height:4px; margin-bottom:1rem;">
+                        <div class="progress-bar-fill" style="width:${stPct}%"></div>
+                    </div>
+                    <ul class="subtask-list">
+                        ${t.subtasks.map(st => `
+                            <li class="subtask-item ${st.is_completed ? 'completed' : ''}">
+                                <i data-lucide="${st.is_completed ? 'check-circle' : 'circle'}" size="14"></i>
+                                ${st.title}
+                            </li>
+                        `).join('')}
                     </ul>
                 </div>
             `;
         }
 
         html += `
-            <div class="card card-info" style="display:flex; flex-direction:column; background:white; border:1px solid #eee;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:1rem; align-items:center;">
+            <div class="task-card">
+                <div class="task-meta">
                     ${statusBadge}
-                    <span class="badge" style="background:transparent; border:1px solid #ccc; color:#666; font-size:0.7rem;">${t.priority}</span>
+                    <span class="badge" style="background:transparent; border:1px solid #e2e8f0; color:#94a3b8; font-size:0.7rem;">${t.priority}</span>
                 </div>
-                <h4 style="margin-bottom:0.5rem;">${t.title}</h4>
-                <p class="text-sm text-muted" style="flex-grow:1; font-size:0.9rem;">${t.description || ''}</p>
+                <h4>${t.title}</h4>
+                <p>${t.description || ''}</p>
                 ${subtasksHtml}
-                <div style="margin-top:1rem; display:flex; justify-content:flex-end;">
-                    <div class="avatar" style="width:28px; height:28px; background:var(--fire-color); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:bold;" title="Assignee">${t.assignee ? t.assignee.substring(0,2).toUpperCase() : '?'}</div>
+                <div class="task-footer">
+                    <div class="avatar-circle" title="Assignee">${t.assignee ? t.assignee.substring(0,2).toUpperCase() : '?'}</div>
                 </div>
             </div>
         `;
