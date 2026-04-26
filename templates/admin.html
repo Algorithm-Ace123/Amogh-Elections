@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Fire & Ice</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-layout { display: none; }
+        .login-layout { display: block; max-width: 400px; margin: 4rem auto; text-align: center; }
+        .table-responsive { overflow-x: auto; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <span class="school-logo">🛡️</span>
+            <span class="brand">Admin Dashboard</span>
+        </div>
+        <ul class="nav-links admin-layout">
+            <li><a href="#" onclick="logout()" style="color: var(--fire-color);">Logout</a></li>
+        </ul>
+    </nav>
+
+    <main id="app-content">
+        <!-- Login Section -->
+        <section id="login-section" class="login-layout card">
+            <h2>Admin Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <input type="password" id="admin-pass" placeholder="Enter Admin Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+                <p id="login-msg" class="result-msg"></p>
+            </form>
+        </section>
+
+        <!-- Admin Dashboard -->
+        <section id="dashboard-section" class="admin-layout" style="max-width: 1200px; margin: 2rem auto; padding: 1rem;">
+            
+            <div class="tabs progress-tabs" id="admin-tabs" style="margin-bottom: 2rem; display:flex; gap:1rem;">
+                <button class="tab-btn active" onclick="switchAdminTab('submissions')"><i data-lucide="inbox"></i> Submissions</button>
+                <button class="tab-btn" onclick="switchAdminTab('polls')"><i data-lucide="bar-chart-2"></i> Polls Manager</button>
+                <button class="tab-btn" onclick="switchAdminTab('tasks')"><i data-lucide="trello"></i> Task Control</button>
+                <button class="tab-btn" onclick="switchAdminTab('announcements')"><i data-lucide="bell"></i> Announcements</button>
+                <button class="tab-btn" onclick="switchAdminTab('filter')"><i data-lucide="shield-alert"></i> Filter Logs</button>
+            </div>
+
+            <!-- Manage Submissions -->
+            <div id="tab-submissions" class="admin-tab-content">
+                <div style="display:flex; gap:2rem;">
+                    <div style="flex:1;">
+                        <h2>Manage Submissions</h2>
+                        <div class="tabs" style="margin-top:1rem; margin-bottom:1rem;">
+                            <button class="tab-btn active" onclick="loadSubmissions('feedback')">Feedback</button>
+                            <button class="tab-btn" onclick="loadSubmissions('ideas')">Ideas</button>
+                            <button class="tab-btn" onclick="loadSubmissions('lost_found')">Lost & Found</button>
+                            <button class="tab-btn" onclick="loadSubmissions('study_groups')">Study Groups</button>
+                        </div>
+                        <div class="card table-responsive" style="max-height: 600px; overflow-y:auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Details</th>
+                                        <th>Status / Priority</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="submissions-table-body">
+                                    <tr><td colspan="4">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Slide-out Side Panel for Responses -->
+                    <div id="response-panel" class="card card-info" style="width:350px; display:none; flex-direction:column; position:sticky; top:2rem; max-height:calc(100vh - 4rem); overflow-y:auto;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <h3 id="panel-title">Respond to Case</h3>
+                            <button class="btn" style="background:transparent; padding:4px;" onclick="closeResponsePanel()"><i data-lucide="x"></i></button>
+                        </div>
+                        <p class="text-sm text-muted" id="panel-desc" style="margin-bottom:1.5rem;"></p>
+                        
+                        <form id="response-form">
+                            <input type="hidden" id="r-table">
+                            <input type="hidden" id="r-id">
+                            
+                            <div class="form-group">
+                                <label>Priority</label>
+                                <select id="r-priority">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select id="r-status">
+                                    <option value="Received">Received</option>
+                                    <option value="Under Review">Under Review</option>
+                                    <option value="Escalated">Escalated</option>
+                                    <option value="Resolved">Resolved</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Public Response</label>
+                                <textarea id="r-response" rows="5" placeholder="Enter response visible to student..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-secondary w-100">Update Submission</button>
+                            <p id="r-result" class="result-msg"></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Polls Manager -->
+            <div id="tab-polls" class="admin-tab-content" style="display:none;">
+                <div style="display:flex; gap:2rem;">
+                    <div style="flex:1;">
+                        <h2>Polls Manager</h2>
+                        <div class="card table-responsive" style="margin-top:1rem;">
+                            <table class="data-table">
+                                <thead><tr><th>Poll</th><th>Type</th><th>Status</th><th>Total Votes</th></tr></thead>
+                                <tbody id="polls-table-body"><tr><td colspan="4">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card" style="width:350px;">
+                        <h3>Create Poll</h3>
+                        <form id="create-poll-form" style="margin-top:1rem;">
+                            <div class="form-group"><label>Question</label><input type="text" id="p-question" required></div>
+                            <div class="form-group">
+                                <label>Type</label>
+                                <select id="p-type" onchange="togglePollOptions(this.value)">
+                                    <option value="Yes-No">Yes-No</option>
+                                    <option value="Opinion">Opinion (Multiple Choice)</option>
+                                    <option value="Priority">Priority (Ranking)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="p-options-container" style="display:none;">
+                                <label>Options (Comma separated)</label>
+                                <input type="text" id="p-options" placeholder="e.g. Option 1, Option 2">
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select id="p-status">
+                                    <option value="Draft">Draft (Upcoming)</option>
+                                    <option value="Active">Active</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Create Poll</button>
+                            <p id="p-result" class="result-msg"></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Control -->
+            <div id="tab-tasks" class="admin-tab-content" style="display:none;">
+                <div style="display:flex; gap:2rem;">
+                    <div style="flex:1;">
+                        <h2>Task Control</h2>
+                        <div class="card table-responsive" style="margin-top:1rem;">
+                            <table class="data-table">
+                                <thead><tr><th>Title</th><th>Focus Area</th><th>Status</th><th>Assignee</th><th>Action</th></tr></thead>
+                                <tbody id="tasks-table-body"><tr><td colspan="5">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card" style="width:350px;">
+                        <h3>Create Task</h3>
+                        <form id="create-task-form" style="margin-top:1rem;">
+                            <div class="form-group"><label>Title</label><input type="text" id="tk-title" required></div>
+                            <div class="form-group"><label>Focus Area</label><input type="text" id="tk-focus" placeholder="e.g. Student Safety" required></div>
+                            <div class="form-group"><label>Assignee</label><input type="text" id="tk-assignee" placeholder="e.g. Amogh"></div>
+                            <div class="form-group"><label>Status</label><select id="tk-status"><option value="Planned">Planned</option><option value="In Progress">In Progress</option><option value="Blocked">Blocked</option><option value="Completed">Completed</option></select></div>
+                            <div class="form-group"><label>Subtasks (Comma separated)</label><input type="text" id="tk-subtasks"></div>
+                            <button type="submit" class="btn btn-secondary w-100">Create Task</button>
+                            <p id="tk-result" class="result-msg"></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Announcements -->
+            <div id="tab-announcements" class="admin-tab-content" style="display:none; max-width:600px; margin:0 auto;">
+                <h2>Post Announcement</h2>
+                <div class="card form-container" style="margin-top:1rem;">
+                    <form id="announcement-form">
+                        <div class="form-group"><label>Title</label><input type="text" id="a-title" required></div>
+                        <div class="form-group"><label>Description</label><textarea id="a-desc" rows="3" required></textarea></div>
+                        <button type="submit" class="btn btn-primary w-100">Post Announcement</button>
+                        <p id="announcement-msg" class="result-msg"></p>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Filter Logs -->
+            <div id="tab-filter" class="admin-tab-content" style="display:none;">
+                <h2>Filter Logs</h2>
+                <div class="card table-responsive" style="margin-top:1rem;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Form</th>
+                                <th>Reason</th>
+                                <th>Flagged Tokens</th>
+                                <th>Submission Snippet</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filter-logs-body"><tr><td colspan="6">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="/static/admin.js"></script>
+</body>
+</html>
