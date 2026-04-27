@@ -369,8 +369,8 @@ def admin_update_submission(table_name, id):
     
     # Mapping of tables to their verified columns based on current database state
     table_columns = {
-        "feedback": ["status"],
-        "ideas": ["status"],
+        "feedback": ["status", "admin_response"],
+        "ideas": ["status", "admin_response"],
         "lost_found": [],
         "study_groups": []
     }
