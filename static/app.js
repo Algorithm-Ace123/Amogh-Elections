@@ -260,7 +260,7 @@ const originalNavigate = navigate;
 navigate = function(pageId) {
     originalNavigate(pageId);
     if (pageId === 'pulse') loadPulse();
-    if (pageId === 'idea-box') loadFeaturedIdeas();
+    if (pageId === 'idea-box') loadIdeas();
     if (pageId === 'lost-found') { currentLFTab = 'Lost'; loadLF(); }
     if (pageId === 'study-groups') loadStudyGroups();
     if (pageId === 'home') loadPulseSnapshot();

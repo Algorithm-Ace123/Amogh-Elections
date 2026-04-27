@@ -389,9 +389,19 @@ def admin_update_submission(table_name, id):
     
     try:
         if update_data:
-            supabase.table(table_name).update(update_data).eq("id", id).execute()
-        return jsonify({"success": True}), 200
+            print(f"Attempting to update {table_name} with data: {update_data}")
+            result = supabase.table(table_name).update(update_data).eq("id", id).execute()
+            print(f"Update result: {result}")
+            if result.data:
+                return jsonify({"success": True, "data": result.data}), 200
+            # Check if update was successful even without returned data
+            if result is not None:
+                return jsonify({"success": True}), 200
+        return jsonify({"success": True, "message": "No data to update"}), 200
     except Exception as e:
+        print(f"Update error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/admin/submissions/<table_name>/<id>', methods=['DELETE'])

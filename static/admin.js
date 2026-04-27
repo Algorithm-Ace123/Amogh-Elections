@@ -177,6 +177,9 @@ document.getElementById('response-form').addEventListener('submit', async (e) =>
         admin_response: document.getElementById('r-response').value
     };
 
+    console.log("Update payload:", payload);
+    console.log("Table:", table, "ID:", id);
+
     btn.disabled = true;
     btn.textContent = 'Updating...';
 
@@ -187,6 +190,9 @@ document.getElementById('response-form').addEventListener('submit', async (e) =>
             body: JSON.stringify(payload)
         });
         
+        const data = await res.json();
+        console.log("Update response:", res.status, data);
+        
         if (res.ok) {
             msg.innerHTML = '<span class="success-text">Update successful!</span>';
             setTimeout(() => {
@@ -194,11 +200,12 @@ document.getElementById('response-form').addEventListener('submit', async (e) =>
                 loadSubmissions(table);
             }, 1000);
         } else {
-            const data = await res.json();
             msg.innerHTML = `<span class="error-text">Update failed: ${data.error || 'Unknown error'}</span>`;
+            console.error("Update failed:", data);
         }
     } catch (e) {
-        msg.innerHTML = '<span class="error-text">Network error.</span>';
+        msg.innerHTML = '<span class="error-text">Network error: ' + e.message + '</span>';
+        console.error("Network error:", e);
     } finally {
         btn.disabled = false;
         btn.textContent = 'Update Submission';
