@@ -12,7 +12,7 @@ function navigate(pageId) {
 
     if (pageId === 'support') loadSupportStats();
     if (pageId === 'announcements') loadAnnouncements();
-    if (pageId === 'polls') loadPolls();
+    if (pageId === 'registrations') loadRegistrationFests();
     if (pageId === 'progress') loadTasks();
     
     window.scrollTo(0, 0);
@@ -20,8 +20,11 @@ function navigate(pageId) {
 
 document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', (e) => {
-        e.preventDefault();
-        navigate(e.target.getAttribute('data-page'));
+        const pageId = link.getAttribute('data-page');
+        if (pageId) {
+            e.preventDefault();
+            navigate(pageId);
+        }
     });
 });
 
@@ -81,7 +84,7 @@ async function trackCase() {
         if (res.ok) {
             let steps = [];
             const prefix = caseId.split('-')[0];
-            if (prefix === 'FI') steps = ['Received', 'Under Review', 'Escalated', 'Resolved'];
+            if (prefix === 'SC' || prefix === 'FI') steps = ['Received', 'Under Review', 'Escalated', 'Resolved'];
             else if (prefix === 'ID') steps = ['Received', 'Acknowledged', 'Being Explored', 'Implemented'];
             else if (prefix === 'LF') steps = ['Posted', 'Active', 'Claimed', 'Expired'];
             else if (prefix === 'SG') steps = ['Posted', 'Active', 'Matched', 'Expired'];
@@ -123,8 +126,8 @@ async function trackCase() {
             const adminResponse = data.admin_response ? `
                 <div class="admin-response-card">
                     <div class="response-header">
-                        <i data-lucide="shield-check" class="text-fire"></i>
-                        <span>Response from the Fire & Ice Team</span>
+                        <i data-lucide="shield-check" class="text-primary"></i>
+                        <span>Response from the Student Council Team</span>
                         <small>${new Date(data.response_timestamp).toLocaleString()}</small>
                     </div>
                     <p>${data.admin_response}</p>
@@ -141,7 +144,7 @@ async function trackCase() {
 
             box.innerHTML = `
                 <div class="tracking-details">
-                    <span class="badge badge-ice" style="margin-bottom: 1.5rem; display: inline-block; padding: 6px 16px;">${data.type_label}</span>
+                    <span class="badge badge-accent" style="margin-bottom: 1.5rem; display: inline-block; padding: 6px 16px;">${data.type_label}</span>
                     <h3 style="margin-bottom: 0.5rem; font-family: 'Outfit', sans-serif;">${caseId}</h3>
                     <p class="text-muted text-sm" style="margin-bottom: 1.5rem;">Submitted on ${new Date(data.created_at || data.date_posted).toLocaleDateString()}</p>
                     
@@ -184,7 +187,7 @@ async function pledgeSupport() {
     const btn = document.getElementById('pledge-btn');
     const msg = document.getElementById('support-msg');
     
-    if (localStorage.getItem('supported_fire_ice')) {
+    if (localStorage.getItem('supported_scis_portal')) {
         msg.innerHTML = '<span class="success-text">You have already supported!</span>';
         return;
     }
@@ -195,7 +198,7 @@ async function pledgeSupport() {
         const data = await res.json();
         if (res.ok) {
             document.getElementById('support-counter').textContent = data.count;
-            localStorage.setItem('supported_fire_ice', 'true');
+            localStorage.setItem('supported_scis_portal', 'true');
             msg.innerHTML = '<span class="success-text">Thank you for your support!</span>';
         }
     } catch (err) {
@@ -259,93 +262,104 @@ async function loadActionBoard() {
 const originalNavigate = navigate;
 navigate = function(pageId) {
     originalNavigate(pageId);
-    if (pageId === 'pulse') loadPulse();
     if (pageId === 'idea-box') loadIdeas();
     if (pageId === 'lost-found') { currentLFTab = 'Lost'; loadLF(); }
     if (pageId === 'study-groups') loadStudyGroups();
-    if (pageId === 'home') loadPulseSnapshot();
     
     // Close mobile nav on navigate
     document.getElementById('nav-menu').classList.remove('nav-open');
     setTimeout(() => { if(window.lucide) lucide.createIcons(); }, 50);
 }
 
-// Mobile Menu
-function toggleNav() {
-    document.getElementById('nav-menu').classList.toggle('nav-open');
-}
-
 // Initial Home Load
 document.addEventListener("DOMContentLoaded", () => {
-    loadPulseSnapshot();
+    // Setup registration form listener if present
+    document.getElementById('registration-form')?.addEventListener('submit', handleRegistrationSubmit);
 });
 
-// Pulse
-async function loadPulse() {
-    const list = document.getElementById('pulse-list');
+// Registrations Feature
+async function loadRegistrationFests() {
+    const select = document.getElementById('reg-fest');
+    if (!select) return;
     try {
-        const res = await fetch('/api/pulse');
-        const data = await res.json();
+        const res = await fetch('/api/fests');
+        const fests = await res.json();
         
-        let totalVotes = data.reduce((sum, item) => sum + item.votes, 0) || 1; // avoid /0
-
-        list.innerHTML = data.map((item, idx) => {
-            const pct = Math.round((item.votes / totalVotes) * 100);
-            const isTop3 = idx < 3;
-            const hasVoted = localStorage.getItem('pulse_voted') === 'true';
-            return `
-            <div class="pulse-issue">
-                <div class="pulse-info">
-                    <strong>${item.issue_name}</strong> ${isTop3 ? '<span class="badge-priority">Priority</span>' : ''}
-                    <div class="pulse-bar-bg"><div class="pulse-bar-fill animated-bar" data-width="${pct}%" style="width: 0%;"></div></div>
-                </div>
-                <div style="text-align: right;">
-                    <span style="font-size: 0.8rem; color: var(--text-label); display:block;">${item.votes} votes</span>
-                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" ${hasVoted ? 'disabled' : ''} onclick="votePulse('${item.id}')">Upvote</button>
-                </div>
-            </div>`;
-        }).join('');
-        
-        observeAnimatedBars();
+        select.innerHTML = '<option value="">-- Choose Fest --</option>' + 
+            fests.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+            
+        // Reset event select
+        const eventSelect = document.getElementById('reg-event');
+        eventSelect.innerHTML = '<option value="">-- Select Fest First --</option>';
+        eventSelect.disabled = true;
     } catch (e) {
-        list.innerHTML = 'Error loading issues.';
+        console.error('Error loading fests:', e);
     }
 }
 
-async function votePulse(id) {
-    if (localStorage.getItem('pulse_voted')) return;
+async function onFestChange(festId) {
+    const eventSelect = document.getElementById('reg-event');
+    if (!eventSelect) return;
+    
+    if (!festId) {
+        eventSelect.innerHTML = '<option value="">-- Select Fest First --</option>';
+        eventSelect.disabled = true;
+        return;
+    }
+    
     try {
-        const res = await fetch('/api/pulse/vote/' + id, {method: 'POST'});
-        if (res.ok) {
-            localStorage.setItem('pulse_voted', 'true');
-            loadPulse();
-            loadPulseSnapshot();
-        }
-    } catch (e) { alert("Failed to vote"); }
+        const res = await fetch(`/api/fests/${festId}/events`);
+        const events = await res.json();
+        
+        eventSelect.innerHTML = '<option value="">-- Choose Event --</option>' +
+            events.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+        eventSelect.disabled = false;
+    } catch (e) {
+        console.error('Error loading events:', e);
+    }
 }
 
-async function loadPulseSnapshot() {
-    const list = document.getElementById('home-pulse-snapshot');
-    if(!list) return;
+async function handleRegistrationSubmit(e) {
+    e.preventDefault();
+    const resultMsg = document.getElementById('registration-result');
+    const submitBtn = document.getElementById('submit-registration-btn');
+    
+    const payload = {
+        name: document.getElementById('reg-name').value,
+        class: document.getElementById('reg-class').value,
+        section: document.getElementById('reg-section').value,
+        phone_number: document.getElementById('reg-phone').value,
+        parent_phone_number: document.getElementById('reg-parent-phone').value,
+        fest_id: document.getElementById('reg-fest').value,
+        event_id: document.getElementById('reg-event').value,
+        cv_resume: document.getElementById('reg-cv').value,
+        message: document.getElementById('reg-message').value
+    };
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Registering...';
+    
     try {
-        const res = await fetch('/api/pulse');
+        const res = await fetch('/api/registrations', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
         const data = await res.json();
-        const top3 = data.slice(0, 3);
-        let totalVotes = data.reduce((sum, item) => sum + item.votes, 0) || 1;
         
-        list.innerHTML = top3.map(item => {
-            const pct = Math.round((item.votes / totalVotes) * 100);
-            return `
-            <div style="margin-bottom: 0.75rem;">
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
-                    <span style="font-weight: 500;">${item.issue_name}</span><span style="color:var(--text-label);">${item.votes}</span>
-                </div>
-                <div class="pulse-bar-bg" style="height: 6px;"><div class="pulse-bar-fill animated-bar" data-width="${pct}%" style="width: 0%;"></div></div>
-            </div>`;
-        }).join('');
-        
-        observeAnimatedBars();
-    } catch (e) {}
+        if (res.ok) {
+            resultMsg.innerHTML = `<span class="success-text">Registration completed successfully!</span>`;
+            document.getElementById('registration-form').reset();
+            document.getElementById('reg-event').disabled = true;
+        } else {
+            resultMsg.innerHTML = `<span class="error-text">${data.error || 'Registration failed'}</span>`;
+        }
+    } catch (err) {
+        resultMsg.innerHTML = `<span class="error-text">Network error</span>`;
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Complete Registration';
+    }
 }
 
 function observeAnimatedBars() {
@@ -402,7 +416,7 @@ async function loadFeaturedIdeas() {
             <div class="idea-card featured">
                 <h4 style="margin-bottom: 0.5rem;">${i.title} <span class="impact-badge">${i.impact}</span></h4>
                 <p style="font-size: 0.9rem;">${i.description}</p>
-                <div class="idea-meta">Category: ${i.category} | Status: <strong style="color:var(--fire-color);">${i.status}</strong></div>
+                <div class="idea-meta">Category: ${i.category} | Status: <strong style="color:var(--primary-color);">${i.status}</strong></div>
             </div>
         `).join('');
     } catch (e) { list.innerHTML = 'Error loading ideas.'; }
@@ -484,7 +498,7 @@ async function loadStudyGroups() {
         list.classList.add('pinboard');
         list.innerHTML = data.map(i => `
             <div class="pin-card">
-                <h4 style="color:var(--ice-color);">${i.subject}</h4>
+                <h4 style="color:var(--primary-color);">${i.subject}</h4>
                 <p style="font-size:0.9rem; font-weight:bold;">${i.topic}</p>
                 <p style="font-size:0.85rem; margin-top:0.5rem;"><strong>Grade:</strong> ${i.grade}</p>
                 <p style="font-size:0.85rem;"><strong>Looking for:</strong> ${i.looking_for}</p>
@@ -492,145 +506,6 @@ async function loadStudyGroups() {
             </div>
         `).join('');
     } catch (e) {}
-}
-
-// --------------------------------------------------------
-// NEW FEATURES: Polls & Progress
-// --------------------------------------------------------
-
-async function loadPolls() {
-    try {
-        const res = await fetch('/api/polls');
-        const polls = await res.json();
-        
-        const activeContainer = document.getElementById('active-polls-list');
-        const closedContainer = document.getElementById('closed-polls-list');
-        const upcomingContainer = document.getElementById('upcoming-polls-list');
-        
-        activeContainer.innerHTML = ''; closedContainer.innerHTML = ''; upcomingContainer.innerHTML = '';
-        
-        polls.forEach(poll => {
-            const hasVoted = localStorage.getItem('voted_poll_' + poll.id);
-            if (poll.status === 'Active') {
-                activeContainer.innerHTML += buildPollCard(poll, hasVoted);
-            } else if (poll.status === 'Closed') {
-                closedContainer.innerHTML += buildClosedPollCard(poll);
-            } else if (poll.status === 'Draft') {
-                upcomingContainer.innerHTML += `<div class="card"><h4 class="text-muted" style="margin-bottom:0.5rem;">${poll.question}</h4><span class="badge badge-warning" style="background:var(--fire-color); color:white;">Coming Soon</span></div>`;
-            }
-        });
-        
-        if (!activeContainer.innerHTML) activeContainer.innerHTML = '<p>No active polls.</p>';
-        if (!closedContainer.innerHTML) closedContainer.innerHTML = '<p>No closed polls.</p>';
-        if (!upcomingContainer.innerHTML) upcomingContainer.innerHTML = '<p>No upcoming polls.</p>';
-        
-        lucide.createIcons();
-    } catch (e) {
-        console.error(e);
-    }
-}
-
-function buildPollCard(poll, hasVoted) {
-    let optionsHtml = '';
-    
-    if (poll.type === 'Yes-No') {
-        if (hasVoted) {
-            const total = poll.options.reduce((sum, opt) => sum + opt.votes, 0) || 1;
-            optionsHtml = poll.options.map(opt => `
-                <div style="margin-bottom:0.5rem;">
-                    <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:0.2rem;">
-                        <span>${opt.option_text}</span>
-                        <span>${Math.round((opt.votes/total)*100)}% (${opt.votes})</span>
-                    </div>
-                    <div class="progress-bar-container" style="height:8px;">
-                        <div class="progress-bar-fill ${opt.option_text==='Yes'?'bg-fire':'bg-ice'}" style="width:${(opt.votes/total)*100}%"></div>
-                    </div>
-                </div>
-            `).join('');
-        } else {
-            optionsHtml = `<div style="display:flex; gap:1rem; margin-top:1.5rem;">`;
-            poll.options.forEach(opt => {
-                optionsHtml += `<button class="btn ${opt.option_text==='Yes'?'btn-primary':'btn-secondary'} w-100" onclick="submitVote('${poll.id}', '${poll.type}', '${opt.id}')">${opt.option_text}</button>`;
-            });
-            optionsHtml += `</div>`;
-        }
-    } else if (poll.type === 'Opinion') {
-        if (hasVoted) {
-            const total = poll.options.reduce((sum, opt) => sum + opt.votes, 0) || 1;
-            optionsHtml = poll.options.map(opt => `
-                <div style="margin-bottom:0.5rem;">
-                    <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:0.2rem;">
-                        <span>${opt.option_text}</span>
-                        <span>${Math.round((opt.votes/total)*100)}%</span>
-                    </div>
-                    <div class="progress-bar-container" style="height:8px;">
-                        <div class="progress-bar-fill bg-ice" style="width:${(opt.votes/total)*100}%"></div>
-                    </div>
-                </div>
-            `).join('');
-        } else {
-            optionsHtml = `<div class="poll-options-grid" style="margin-top:1rem; display:flex; flex-direction:column; gap:0.5rem;">`;
-            poll.options.forEach(opt => {
-                optionsHtml += `<button class="btn" style="background:#f4f4f4; color:#333; text-align:left; justify-content:flex-start;" onclick="submitVote('${poll.id}', '${poll.type}', '${opt.id}')">${opt.option_text}</button>`;
-            });
-            optionsHtml += `</div>`;
-        }
-    } else if (poll.type === 'Priority') {
-        if (hasVoted) {
-            const sorted = [...poll.options].sort((a,b) => a.average_rank - b.average_rank);
-            optionsHtml = `<ol style="margin-left: 1.5rem; margin-top:1rem; font-size:0.9rem;">` + sorted.map(opt => `<li style="margin-bottom:0.2rem;">${opt.option_text} (Avg Rank: ${opt.average_rank.toFixed(1)})</li>`).join('') + `</ol>`;
-        } else {
-            // Simplified priority for UI - pick top priority
-            optionsHtml = `<p class="text-sm text-muted" style="margin-top:1rem;">Select your #1 priority:</p><div class="poll-options-grid" style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.5rem;">`;
-            poll.options.forEach(opt => {
-                optionsHtml += `<button class="btn" style="background:#f4f4f4; color:#333; text-align:left; justify-content:flex-start;" onclick="submitPriorityVote('${poll.id}', '${opt.id}')">${opt.option_text}</button>`;
-            });
-            optionsHtml += `</div>`;
-        }
-    }
-
-    const totalVotes = poll.options.reduce((sum, opt) => sum + opt.votes, 0);
-
-    return `
-        <div class="card poll-card card-info">
-            <span class="badge ${poll.type==='Yes-No'?'badge-fire':'badge-ice'}" style="margin-bottom:0.5rem; display:inline-block; background:var(--ice-color); color:white;">${poll.type}</span>
-            <h3 style="margin-bottom:0.5rem;">${poll.question}</h3>
-            <p class="text-sm text-muted" style="margin-bottom:1rem;">${totalVotes} responses so far</p>
-            ${optionsHtml}
-            ${hasVoted ? '<p class="text-success text-sm" style="margin-top:1.5rem; text-align:center; color:#4caf50;"><i data-lucide="check-circle" size="14"></i> You have voted</p>' : ''}
-        </div>
-    `;
-}
-
-function buildClosedPollCard(poll) {
-    return `<div class="card card-info" style="margin-bottom: 1rem; opacity: 0.8;">
-        <h4>${poll.question}</h4>
-        <p class="text-sm text-muted">Final Results available in Admin</p>
-    </div>`;
-}
-
-async function submitVote(pollId, type, optionId) {
-    try {
-        await fetch('/api/polls/vote', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ poll_type: type, option_id: optionId })
-        });
-        localStorage.setItem('voted_poll_' + pollId, 'true');
-        loadPolls();
-    } catch(e) {}
-}
-
-async function submitPriorityVote(pollId, optionId) {
-    try {
-        await fetch('/api/polls/vote', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ poll_type: 'Priority', ranked_options: [{id: optionId, rank: 1}] })
-        });
-        localStorage.setItem('voted_poll_' + pollId, 'true');
-        loadPolls();
-    } catch(e) {}
 }
 
 // Progress Board
@@ -646,28 +521,23 @@ async function loadTasks() {
         const total = allTasks.length;
         const completed = allTasks.filter(t => t.status === 'Completed').length;
         const inProgress = allTasks.filter(t => t.status === 'In Progress').length;
-        const planned = allTasks.filter(t => t.status === 'Planned').length;
         
         const pct = total > 0 ? (completed / total) * 100 : 0;
-        document.getElementById('overall-progress-bar').style.width = pct + '%';
-        document.getElementById('stat-completed').textContent = completed;
-        document.getElementById('stat-in-progress').textContent = inProgress;
-        document.getElementById('stat-planned').textContent = planned;
+        if (document.getElementById('overall-progress-bar')) {
+            document.getElementById('overall-progress-bar').style.width = pct + '%';
+        }
+        if (document.getElementById('stat-total')) {
+            document.getElementById('stat-total').textContent = total;
+        }
+        if (document.getElementById('stat-active')) {
+            document.getElementById('stat-active').textContent = inProgress;
+        }
+        if (document.getElementById('stat-completed')) {
+            document.getElementById('stat-completed').textContent = completed;
+        }
         
-        // Load Wins Wall
-        const wins = allTasks.filter(t => t.status === 'Completed').sort((a,b) => new Date(b.completed_at) - new Date(a.completed_at)).slice(0, 4);
-        document.getElementById('wins-wall').innerHTML = wins.map(w => `
-            <div class="task-card">
-                <div class="task-meta">
-                    <span class="badge" style="background:#4caf50; color:white;"><i data-lucide="check" size="12"></i> Done</span>
-                </div>
-                <h4>${w.title}</h4>
-                ${w.impact_statement ? `<p class="text-sm"><em>"${w.impact_statement}"</em></p>` : ''}
-            </div>
-        `).join('');
-
         renderTasksByFocus();
-    } catch (e) {}
+    } catch (e) { console.error('loadTasks error:', e); }
 }
 
 function switchProgressTab(area) {
@@ -681,6 +551,9 @@ function renderTasksByFocus() {
     const board = document.getElementById('progress-board-view');
     const tasks = allTasks.filter(t => t.focus_area === currentFocusArea);
     
+    // Filter out completed tasks for grid rendering (Recently completed should be completely removed)
+    const displayTasks = tasks.filter(t => t.status !== 'Completed');
+    
     if (tasks.length === 0) {
         board.innerHTML = `<div class="card text-center text-muted" style="margin-top:2rem;">No tasks in this area yet.</div>`;
         return;
@@ -690,67 +563,49 @@ function renderTasksByFocus() {
     const pct = tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0;
 
     let html = `
-        <div class="card" style="margin: 2rem 0; border: none; background: #f8fafc;">
+        <div class="card card-mint" style="margin: 2rem 0;">
             <div style="display:flex; justify-content:space-between; margin-bottom:1rem; align-items: center;">
-                <h3 style="margin:0;">${currentFocusArea} Focus</h3>
-                <span class="badge badge-ice">${pct}% Complete</span>
+                <h3 style="margin:0; font-size:1.3rem;">${currentFocusArea} Focus Area</h3>
+                <span class="badge" style="background:var(--primary-color); color:white; font-size:0.85rem;">${pct}% Complete</span>
             </div>
             <div class="progress-bar-container">
                 <div class="progress-bar-fill" style="width:${pct}%"></div>
             </div>
+            <p style="margin-top:0.75rem; font-size:0.85rem; color:var(--text-label);">${completed} of ${tasks.length} task${tasks.length !== 1 ? 's' : ''} completed</p>
         </div>
-        <div class="task-grid">
     `;
 
-    tasks.forEach(t => {
-        let statusBadge = '';
-        if (t.status === 'Planned') statusBadge = '<span class="badge" style="background:#f1f5f9; color:#64748b;">Planned</span>';
-        if (t.status === 'In Progress') statusBadge = '<span class="badge" style="display:flex; align-items:center; gap:6px; background:var(--ice-color); color:white;"><div class="pulsing-dot" style="width:6px; height:6px; background:white; border-radius:50%; animation: pulse 1.5s infinite;"></div> In Progress</span>';
-        if (t.status === 'Completed') statusBadge = '<span class="badge" style="background:#22c55e; color:white;"><i data-lucide="check" size="12"></i> Completed</span>';
-        if (t.status === 'Blocked') statusBadge = '<span class="badge" style="background:#ef4444; color:white;"><i data-lucide="alert-triangle" size="12"></i> Blocked</span>';
+    if (displayTasks.length === 0) {
+        html += `<div class="card text-center text-muted" style="margin-top:2rem; padding: 2rem;">All initiatives in this area are completed! 🎉</div>`;
+    } else {
+        html += `<div class="task-grid">`;
+        displayTasks.forEach(t => {
+            let statusBadge = '';
+            if (t.status === 'Planned') statusBadge = '<span class="badge" style="background:#e7f5ff; color:#228be6;">Planned</span>';
+            if (t.status === 'In Progress') statusBadge = '<span class="badge" style="background:var(--primary-color); color:white;"><span class="pulsing-dot"></span> In Progress</span>';
+            if (t.status === 'Completed') statusBadge = '<span class="badge" style="background:#22c55e; color:white;"><i data-lucide="check" size="12"></i> Completed</span>';
+            if (t.status === 'Blocked') statusBadge = '<span class="badge" style="background:#fff5f5; color:#fa5252;"><i data-lucide="alert-triangle" size="12"></i> Blocked</span>';
 
-        let subtasksHtml = '';
-        if (t.subtasks && t.subtasks.length > 0) {
-            const stCompleted = t.subtasks.filter(st => st.is_completed).length;
-            const stPct = (stCompleted / t.subtasks.length) * 100;
-            subtasksHtml = `
-                <div class="subtask-section">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                        <span style="font-size:0.75rem; font-weight:700; color:var(--text-label);">SUBTASKS</span>
-                        <span style="font-size:0.75rem; font-weight:700; color:var(--text-label);">${stCompleted}/${t.subtasks.length}</span>
+            html += `
+                <div class="task-card" data-status="${t.status}" onclick="openTaskModal('${t.id}')">
+                    <div class="task-card-summary">
+                        <div class="task-meta">
+                            ${statusBadge}
+                        </div>
+                        <h4 style="margin-bottom: 0.5rem;">${t.title}</h4>
+                        <p>${t.description || 'No description provided.'}</p>
+                        
+                        <div class="view-details-hint">
+                            <span>View Milestones & Details</span>
+                            <i data-lucide="arrow-right" size="14"></i>
+                        </div>
                     </div>
-                    <div class="progress-bar-container" style="height:4px; margin-bottom:1rem;">
-                        <div class="progress-bar-fill" style="width:${stPct}%"></div>
-                    </div>
-                    <ul class="subtask-list">
-                        ${t.subtasks.map(st => `
-                            <li class="subtask-item ${st.is_completed ? 'completed' : ''}">
-                                <i data-lucide="${st.is_completed ? 'check-circle' : 'circle'}" size="14"></i>
-                                ${st.title}
-                            </li>
-                        `).join('')}
-                    </ul>
                 </div>
             `;
-        }
-
-        html += `
-            <div class="task-card">
-                <div class="task-meta">
-                    ${statusBadge}
-                    <span class="badge" style="background:transparent; border:1px solid #e2e8f0; color:#94a3b8; font-size:0.7rem;">${t.priority}</span>
-                </div>
-                <h4>${t.title}</h4>
-                <p>${t.description || ''}</p>
-                ${subtasksHtml}
-                <div class="task-footer">
-                    <div class="avatar-circle" title="Assignee">${t.assignee ? t.assignee.substring(0,2).toUpperCase() : '?'}</div>
-                </div>
-            </div>
-        `;
-    });
-
-    html += `</div>`;
+        });
+        html += `</div>`;
+    }
+    
     board.innerHTML = html;
     lucide.createIcons();
 }
@@ -770,8 +625,8 @@ function toggleTimeline() {
             <div class="card text-center" style="margin-top:2rem;">
                 <p>Gantt Timeline View is active (Displaying ${allTasks.length} total tasks scheduled across the semester).</p>
                 <div style="height:200px; background:repeating-linear-gradient(90deg, transparent, transparent 49px, #f9f9f9 49px, #f9f9f9 50px); border:1px solid #eee; border-radius:8px; margin-top:2rem; position:relative; overflow:hidden;">
-                    <div style="position:absolute; top:30px; left:10%; width:30%; height:24px; background:var(--fire-color); border-radius:4px; opacity:0.8;"></div>
-                    <div style="position:absolute; top:70px; left:30%; width:40%; height:24px; background:var(--ice-color); border-radius:4px; opacity:0.8;"></div>
+                    <div style="position:absolute; top:30px; left:10%; width:30%; height:24px; background:var(--primary-color); border-radius:4px; opacity:0.8;"></div>
+                    <div style="position:absolute; top:70px; left:30%; width:40%; height:24px; background:var(--accent-color); border-radius:4px; opacity:0.8;"></div>
                     <div style="position:absolute; top:110px; left:60%; width:20%; height:24px; background:#4caf50; border-radius:4px; opacity:0.8;"></div>
                     <div style="position:absolute; top:0; bottom:0; left:45%; width:2px; background:var(--text-heading); z-index:10; opacity:0.3;"></div>
                     <div style="position:absolute; top:5px; left:45%; transform:translateX(-50%); font-size:0.7rem; color:var(--text-muted); font-weight:bold;">CURRENT WEEK</div>
@@ -785,3 +640,90 @@ function toggleTimeline() {
     }
     lucide.createIcons();
 }
+
+function openTaskModal(taskId) {
+    const t = allTasks.find(task => task.id == taskId);
+    if (!t) return;
+
+    const modal = document.getElementById('task-modal');
+    const badgeContainer = document.getElementById('modal-task-badge');
+    const body = document.getElementById('task-modal-body');
+
+    let statusBadge = '';
+    if (t.status === 'Planned') statusBadge = '<span class="badge" style="background:#f1f5f9; color:#64748b;">Planned</span>';
+    if (t.status === 'In Progress') statusBadge = '<span class="badge" style="background:var(--primary-color); color:white;">In Progress</span>';
+    if (t.status === 'Completed') statusBadge = '<span class="badge" style="background:#22c55e; color:white;"><i data-lucide="check" size="12"></i> Completed</span>';
+    
+    badgeContainer.innerHTML = `
+        <div style="display:flex; gap:0.75rem;">
+            ${statusBadge}
+        </div>
+    `;
+
+    let subtasksHtml = '';
+    if (t.subtasks && t.subtasks.length > 0) {
+        const stCompleted = t.subtasks.filter(st => st.is_completed).length;
+        const stPct = (stCompleted / t.subtasks.length) * 100;
+        subtasksHtml = `
+            <div class="subtask-section" style="border:none; padding:0; margin-top:2.5rem;">
+                <span class="modal-section-title">Execution Milestones — ${stCompleted}/${t.subtasks.length}</span>
+                <div class="progress-bar-container" style="height:10px; margin-bottom:2rem; background: #f1f5f9;">
+                    <div class="progress-bar-fill" style="width:${stPct}%; background: ${stPct === 100 ? '#22c55e' : 'var(--brand-gradient)'};"></div>
+                </div>
+                <ul class="subtask-list">
+                    ${t.subtasks.map(st => `
+                        <li class="subtask-item ${st.is_completed ? 'completed' : ''}" style="margin-bottom:1.25rem;">
+                            <i data-lucide="${st.is_completed ? 'check-circle' : 'circle'}"></i>
+                            <span style="font-size:1.05rem !important;">${st.title}</span>
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    body.innerHTML = `
+        <h2 class="modal-task-title">${t.title}</h2>
+        <p class="modal-task-desc">${t.description || 'No detailed description provided for this initiative.'}</p>
+        
+        ${t.impact_statement ? `
+            <span class="modal-section-title">Impact Statement</span>
+            <div style="background: rgba(0, 165, 81, 0.05); padding: 1.5rem; border-radius: 16px; border-left: 5px solid var(--primary-color); margin-bottom: 2.5rem;">
+                <p style="font-size:1.1rem; color:var(--text-heading); font-weight:500; margin:0; line-height:1.6;">${t.impact_statement}</p>
+            </div>
+        ` : ''}
+
+        ${subtasksHtml}
+
+        <div style="margin-top: 3.5rem; padding-top: 2rem; border-top: 1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:1rem;">
+                <div class="avatar-circle" style="width:40px; height:40px;">${t.assignee ? t.assignee.substring(0,2).toUpperCase() : 'AM'}</div>
+                <div>
+                    <span style="display:block; font-size:0.9rem; font-weight:700; color:var(--text-heading);">${t.assignee || 'Amogh'}</span>
+                    <span style="display:block; font-size:0.75rem; color:var(--text-label);">Lead Coordinator</span>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <span style="display:block; font-size:0.75rem; color:var(--text-label); text-transform:uppercase; letter-spacing:0.1em; font-weight:800;">Initiated</span>
+                <span style="display:block; font-size:0.9rem; font-weight:600; color:var(--text-heading);">${new Date(t.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})}</span>
+            </div>
+        </div>
+    `;
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    lucide.createIcons();
+}
+
+function closeTaskModal() {
+    document.getElementById('task-modal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// Close modal on background click
+window.addEventListener('click', (e) => {
+    const modal = document.getElementById('task-modal');
+    if (e.target === modal) {
+        closeTaskModal();
+    }
+});

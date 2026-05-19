@@ -65,7 +65,7 @@ def submit_feedback():
 def track_case(track_id):
     try:
         prefix = track_id.split('-')[0]
-        if prefix == 'FI':
+        if prefix in ['SC', 'FI']:
             table, id_col, type_label = "feedback", "case_id", "Feedback"
         elif prefix == 'ID':
             table, id_col, type_label = "ideas", "idea_id", "Idea Box"
@@ -407,84 +407,124 @@ def admin_update_submission(table_name, id):
 @app.route('/api/admin/submissions/<table_name>/<id>', methods=['DELETE'])
 def admin_delete_submission(table_name, id):
     if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
-    valid_tables = ["feedback", "ideas", "lost_found", "study_groups"]
+    valid_tables = ["feedback", "ideas", "lost_found", "study_groups", "registrations"]
     if table_name not in valid_tables: return jsonify({"error": "Invalid table"}), 400
     
     try:
-        supabase.table(table_name).delete().eq("id", id).execute()
+        query_id = id
+        if table_name == "registrations":
+            try:
+                query_id = int(id)
+            except ValueError:
+                pass
+        supabase.table(table_name).delete().eq("id", query_id).execute()
         return jsonify({"success": True}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/polls', methods=['GET', 'POST'])
-def manage_polls():
+@app.route('/api/fests', methods=['GET', 'POST'])
+def manage_fests():
     if request.method == 'GET':
         try:
-            polls_res = supabase.table("polls").select("*").order("created_at", desc=True).execute()
-            polls = polls_res.data
-            options_res = supabase.table("poll_options").select("*").execute()
-            options_by_poll = {}
-            for opt in options_res.data:
-                options_by_poll.setdefault(opt['poll_id'], []).append(opt)
-            for p in polls:
-                p['options'] = options_by_poll.get(p['id'], [])
-            return jsonify(polls), 200
-        except Exception as e: return jsonify({"error": str(e)}), 500
-    elif request.method == 'POST':
+            res = supabase.table("fests").select("*").order("name", desc=False).execute()
+            return jsonify(res.data), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    else: # POST
         if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
-        data = request.json
+        name = request.json.get('name')
+        if not name: return jsonify({"error": "Fest name required"}), 400
         try:
-            poll_res = supabase.table("polls").insert({
-                "question": data.get("question"),
-                "type": data.get("type"),
-                "status": data.get("status", "Draft"),
-                "start_date": data.get("start_date") or datetime.utcnow().isoformat(),
-                "end_date": data.get("end_date")
-            }).execute()
-            poll_id = poll_res.data[0]['id']
-            if 'options' in data and data['options']:
-                opts = [{"poll_id": poll_id, "option_text": opt} for opt in data['options']]
-                supabase.table("poll_options").insert(opts).execute()
-            return jsonify({"success": True}), 200
-        except Exception as e: return jsonify({"error": str(e)}), 500
+            res = supabase.table("fests").insert({"name": name}).execute()
+            return jsonify(res.data[0]), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
-@app.route('/api/admin/polls/<poll_id>', methods=['DELETE'])
-def admin_delete_poll(poll_id):
+@app.route('/api/fests/<fest_id>', methods=['DELETE'])
+def delete_fest(fest_id):
     if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
     try:
-        supabase.table("poll_options").delete().eq("poll_id", poll_id).execute()
-        supabase.table("polls").delete().eq("id", poll_id).execute()
+        query_id = fest_id
+        try:
+            query_id = int(fest_id)
+        except ValueError:
+            pass
+        supabase.table("fests").delete().eq("id", query_id).execute()
         return jsonify({"success": True}), 200
-    except Exception as e: return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/api/polls/vote', methods=['POST'])
-def vote_poll():
-    data = request.json
-    poll_type = data.get('poll_type')
-    option_id = data.get('option_id')
-    ranked_options = data.get('ranked_options')
-    
+@app.route('/api/fests/<fest_id>/events', methods=['GET', 'POST'])
+def manage_events(fest_id):
+    if request.method == 'GET':
+        try:
+            res = supabase.table("events").select("*").eq("fest_id", fest_id).order("name", desc=False).execute()
+            return jsonify(res.data), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    else: # POST
+        if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
+        name = request.json.get('name')
+        if not name: return jsonify({"error": "Event name required"}), 400
+        try:
+            res = supabase.table("events").insert({"fest_id": fest_id, "name": name}).execute()
+            return jsonify(res.data[0]), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+@app.route('/api/events/<event_id>', methods=['DELETE'])
+def delete_event(event_id):
+    if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
     try:
-        if poll_type in ['Yes-No', 'Opinion'] and option_id:
-            res = supabase.table("poll_options").select("votes").eq("id", option_id).execute()
-            if res.data:
-                new_votes = res.data[0]['votes'] + 1
-                supabase.table("poll_options").update({"votes": new_votes}).eq("id", option_id).execute()
-        elif poll_type == 'Priority' and ranked_options:
-            for rank_data in ranked_options:
-                oid = rank_data['id']
-                rank = rank_data['rank']
-                res = supabase.table("poll_options").select("average_rank, votes").eq("id", oid).execute()
-                if res.data:
-                    current_avg = res.data[0]['average_rank']
-                    votes = res.data[0]['votes']
-                    new_avg = ((current_avg * votes) + rank) / (votes + 1)
-                    supabase.table("poll_options").update({
-                        "average_rank": new_avg,
-                        "votes": votes + 1
-                    }).eq("id", oid).execute()
+        query_id = event_id
+        try:
+            query_id = int(event_id)
+        except ValueError:
+            pass
+        supabase.table("events").delete().eq("id", query_id).execute()
         return jsonify({"success": True}), 200
-    except Exception as e: return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/registrations', methods=['GET', 'POST'])
+def handle_registrations():
+    if request.method == 'GET':
+        if not is_admin(): return jsonify({"error": "Unauthorized"}), 401
+        try:
+            res = supabase.table("registrations").select("*, fests(name), events(name)").order("created_at", desc=True).execute()
+            return jsonify(res.data), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    else: # POST
+        data = request.json
+        name = data.get('name')
+        student_class = data.get('class')
+        section = data.get('section')
+        phone_number = data.get('phone_number')
+        parent_phone_number = data.get('parent_phone_number')
+        fest_id = data.get('fest_id')
+        event_id = data.get('event_id')
+        cv_resume = data.get('cv_resume', '')
+        message = data.get('message', '')
+
+        if not all([name, student_class, section, phone_number, parent_phone_number, fest_id, event_id]):
+            return jsonify({"error": "All compulsory fields must be filled"}), 400
+
+        try:
+            res = supabase.table("registrations").insert({
+                "name": name,
+                "class": student_class,
+                "section": section,
+                "phone_number": phone_number,
+                "parent_phone_number": parent_phone_number,
+                "fest_id": fest_id,
+                "event_id": event_id,
+                "cv_resume": cv_resume,
+                "message": message
+            }).execute()
+            return jsonify({"success": True, "data": res.data[0]}), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
 @app.route('/api/tasks', methods=['GET', 'POST', 'PUT'])
 def manage_tasks():

@@ -6,16 +6,25 @@
     <title>Admin - SCIS Student Portal</title>
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="icon" href="/static/images/scislogo-removebg-preview.png" type="image/png">
     <style>
         :root {
             --admin-bg: #f8fafc;
             --admin-sidebar: #ffffff;
-            --admin-accent: var(--ice-color);
+            --admin-accent: var(--primary-color);
         }
 
         body {
             background-color: var(--admin-bg);
+            background-image: 
+                radial-gradient(circle at 5% 5%, rgba(0, 165, 81, 0.07) 0%, transparent 40%),
+                radial-gradient(circle at 95% 15%, rgba(3, 78, 161, 0.07) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(253, 185, 19, 0.05) 0%, transparent 45%),
+                radial-gradient(circle at 10% 85%, rgba(240, 101, 149, 0.07) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(151, 117, 250, 0.07) 0%, transparent 40%);
+            background-attachment: fixed;
+            background-size: cover;
             min-height: 100vh;
         }
 
@@ -97,7 +106,7 @@
         /* Sidebar/Response Panel */
         #response-panel {
             background: white;
-            border-left: 4px solid var(--ice-color);
+            border-left: 4px solid var(--primary-color);
             transition: var(--transition);
             box-shadow: var(--shadow-lg);
         }
@@ -114,11 +123,11 @@
 <body>
     <nav class="navbar">
         <div class="logo">
-            <img src="/static/images/scislogo-removebg-preview.png" alt="School Logo" height="32">
+            <img src="/static/images/scislogo-removebg-preview.png" alt="SCIS Small Logo" height="32">
             <span class="brand">Admin Center</span>
         </div>
         <ul class="nav-links admin-layout">
-            <li><button onclick="logout()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-color: var(--fire-color); color: var(--fire-color);">Logout</button></li>
+            <li><button onclick="logout()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-color: var(--primary-color); color: var(--primary-color);">Logout</button></li>
         </ul>
     </nav>
 
@@ -140,10 +149,10 @@
             
             <div class="tabs progress-tabs" id="admin-tabs" style="margin-bottom: 3rem;">
                 <button class="tab-btn active" onclick="switchAdminTab('submissions', this)"><i data-lucide="inbox"></i> Submissions</button>
-                <button class="tab-btn" onclick="switchAdminTab('polls', this)"><i data-lucide="bar-chart-2"></i> Polls Manager</button>
+                <button class="tab-btn" onclick="switchAdminTab('fests', this)"><i data-lucide="calendar"></i> Fest Manager</button>
+                <button class="tab-btn" onclick="switchAdminTab('registrations', this)"><i data-lucide="users"></i> Registrations</button>
                 <button class="tab-btn" onclick="switchAdminTab('tasks', this)"><i data-lucide="layout"></i> Task Control</button>
                 <button class="tab-btn" onclick="switchAdminTab('announcements', this)"><i data-lucide="bell"></i> Announcements</button>
-                <button class="tab-btn" onclick="switchAdminTab('pulse', this)"><i data-lucide="activity"></i> Pulse Issues</button>
                 <button class="tab-btn" onclick="switchAdminTab('filter', this)"><i data-lucide="shield-alert"></i> Filter Logs</button>
             </div>
 
@@ -176,7 +185,7 @@
                     </div>
                     
                     <!-- Slide-out Side Panel for Responses -->
-                    <div id="response-panel" class="card card-info" style="width:400px; display:none; flex-direction:column; position:sticky; top:2rem; max-height:calc(100vh - 4rem); overflow-y:auto; padding: 2rem;">
+                    <div id="response-panel" class="card card-accent" style="width:400px; display:none; flex-direction:column; position:sticky; top:2rem; max-height:calc(100vh - 4rem); overflow-y:auto; padding: 2rem;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                             <h3 id="panel-title" style="margin:0;">Respond to Case</h3>
                             <button class="btn" style="background:transparent; padding:4px;" onclick="closeResponsePanel()"><i data-lucide="x"></i></button>
@@ -222,44 +231,63 @@
                 </div>
             </div>
 
-            <!-- Polls Manager -->
-            <div id="tab-polls" class="admin-tab-content" style="display:none;">
+            <!-- Fest & Event Manager -->
+            <div id="tab-fests" class="admin-tab-content" style="display:none;">
                 <div style="display:flex; gap:2rem;">
+                    <!-- Fests Column -->
                     <div style="flex:1;">
-                        <h2>Polls Manager</h2>
-                        <div class="card table-responsive" style="margin-top:1rem;">
+                        <h2>Fests Manager</h2>
+                        <div class="card table-responsive" style="margin-top:1rem; margin-bottom: 2rem;">
                             <table class="data-table">
-                                <thead><tr><th>Poll</th><th>Type</th><th>Status</th><th>Total Votes</th><th>Action</th></tr></thead>
-                                <tbody id="polls-table-body"><tr><td colspan="5">Loading...</td></tr></tbody>
+                                <thead><tr><th>Fest Name</th><th>Actions</th></tr></thead>
+                                <tbody id="fests-table-body"><tr><td colspan="2">Loading fests...</td></tr></tbody>
                             </table>
                         </div>
+                        
+                        <div class="card">
+                            <h3>Create Fest</h3>
+                            <form id="create-fest-form" style="margin-top:1rem;">
+                                <div class="form-group">
+                                    <label>Fest Name</label>
+                                    <input type="text" id="fest-name-input" required placeholder="e.g. Innovision 2026">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Create Fest</button>
+                                <p id="fest-result" class="result-msg"></p>
+                            </form>
+                        </div>
                     </div>
-                    <div class="card" style="width:350px;">
-                        <h3>Create Poll</h3>
-                        <form id="create-poll-form" style="margin-top:1rem;">
-                            <div class="form-group"><label>Question</label><input type="text" id="p-question" required></div>
-                            <div class="form-group">
-                                <label>Type</label>
-                                <select id="p-type" onchange="togglePollOptions(this.value)">
-                                    <option value="Yes-No">Yes-No</option>
-                                    <option value="Opinion">Opinion (Multiple Choice)</option>
-                                    <option value="Priority">Priority (Ranking)</option>
-                                </select>
+
+                    <!-- Events Column -->
+                    <div style="flex:1;" id="events-manager-section">
+                        <div id="no-fest-selected-msg" class="card text-center" style="padding: 4rem 2rem;">
+                            <i data-lucide="info" size="48" style="color:var(--text-label); margin-bottom: 1rem;"></i>
+                            <h3>No Fest Selected</h3>
+                            <p style="color: var(--text-label); margin-top:0.5rem;">Select a fest from the list to manage its events.</p>
+                        </div>
+                        
+                        <div id="fest-events-control" style="display:none;">
+                            <h2 id="selected-fest-title">Events for Fest</h2>
+                            <input type="hidden" id="selected-fest-id">
+                            
+                            <div class="card table-responsive" style="margin-top:1rem; margin-bottom: 2rem;">
+                                <table class="data-table">
+                                    <thead><tr><th>Event Name</th><th>Actions</th></tr></thead>
+                                    <tbody id="events-table-body"><tr><td colspan="2">Select a fest first.</td></tr></tbody>
+                                </table>
                             </div>
-                            <div class="form-group" id="p-options-container" style="display:none;">
-                                <label>Options (Comma separated)</label>
-                                <input type="text" id="p-options" placeholder="e.g. Option 1, Option 2">
+                            
+                            <div class="card">
+                                <h3>Create Event</h3>
+                                <form id="create-event-form" style="margin-top:1rem;">
+                                    <div class="form-group">
+                                        <label>Event Name</label>
+                                        <input type="text" id="event-name-input" required placeholder="e.g. Code Combat">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Create Event</button>
+                                    <p id="event-result" class="result-msg"></p>
+                                </form>
                             </div>
-                            <div class="form-group">
-                                <label>Status</label>
-                                <select id="p-status">
-                                    <option value="Draft">Draft (Upcoming)</option>
-                                    <option value="Active">Active</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Create Poll</button>
-                            <p id="p-result" class="result-msg"></p>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -305,10 +333,10 @@
                             <div id="tk-edit-subtasks" style="display:none;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                                     <label style="margin:0;">Subtask Progress</label>
-                                    <span id="tk-progress-text" style="font-size:0.8rem; font-weight:600; color:var(--ice-color);"></span>
+                                    <span id="tk-progress-text" style="font-size:0.8rem; font-weight:600; color:var(--primary-color);"></span>
                                 </div>
                                 <div style="height:8px; background:#e2e8f0; border-radius:99px; overflow:hidden; margin-bottom:1rem;">
-                                    <div id="tk-progress-bar" style="height:100%; background:var(--ice-color); border-radius:99px; transition:width 0.4s ease;"></div>
+                                    <div id="tk-progress-bar" style="height:100%; background:var(--primary-color); border-radius:99px; transition:width 0.4s ease;"></div>
                                 </div>
                                 <div id="tk-subtasks-checklist" style="display:flex;flex-direction:column;gap:0.4rem;max-height:220px;overflow-y:auto;margin-bottom:0.75rem;"></div>
                                 <div style="display:flex; gap:0.5rem;">
@@ -373,27 +401,98 @@
                 </div>
             </div>
 
-            <!-- Pulse Issues Manager -->
-            <div id="tab-pulse" class="admin-tab-content" style="display:none;">
-                <div style="display:flex; gap:2rem; align-items:flex-start;">
-                    <div style="flex:1;">
-                        <h2>Community Pulse Issues</h2>
-                        <div class="card table-responsive" style="margin-top:1rem;">
-                            <table class="data-table">
-                                <thead><tr><th>Title</th><th>Description</th><th>Votes</th><th>Delete</th></tr></thead>
-                                <tbody id="pulse-table-body"><tr><td colspan="4">Loading...</td></tr></tbody>
-                            </table>
+            <!-- Registrations Manager -->
+            <div id="tab-registrations" class="admin-tab-content" style="display:none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <h2 style="margin-bottom: 0;">Student Registrations</h2>
+                    
+                    <!-- Export Options Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-primary" style="padding: 10px 20px; font-size: 0.9rem; border-radius: 10px; height: 46px;">
+                            <i data-lucide="download"></i> Export Registrations <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+                        </button>
+                        <div class="dropdown-content" style="min-width: 200px; transform: translateX(-50%) translateY(5px); right: 0; left: auto;">
+                            <a href="#" onclick="exportRegistrations('filtered'); return false;" class="nav-link"><i data-lucide="filter"></i> Export Filtered View</a>
+                            <a href="#" onclick="exportRegistrations('all'); return false;" class="nav-link"><i data-lucide="database"></i> Export All (CSV)</a>
                         </div>
                     </div>
-                    <div class="card" style="width:350px; flex-shrink:0;">
-                        <h3>Create Pulse Issue</h3>
-                        <form id="create-pulse-form" style="margin-top:1rem;">
-                            <div class="form-group"><label>Issue Title</label><input type="text" id="pulse-title" required placeholder="e.g. Better cafeteria options"></div>
-                            <div class="form-group"><label>Description (Optional)</label><textarea id="pulse-desc" rows="3" placeholder="Brief description of the issue..."></textarea></div>
-                            <button type="submit" class="btn btn-primary w-100">Add Pulse Issue</button>
-                            <p id="pulse-result" class="result-msg"></p>
-                        </form>
+                </div>
+
+                <!-- Registration Stats Row -->
+                <div class="stats-grid" style="margin-bottom: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); display: grid; gap: 1.5rem;">
+                    <div class="stat-card" style="padding: 1.5rem; border-radius: 16px; border: 1px solid #e2e8f0; background: white; text-align: center;">
+                        <span class="stat-value" id="stat-total-regs" style="font-size: 2.2rem; line-height: 1.2; font-weight: 800; color: var(--primary-color);">0</span>
+                        <span class="stat-label" style="font-size: 0.75rem; font-weight: 700; color: var(--text-label); letter-spacing: 0.05em; text-transform: uppercase;">Total Registrations</span>
                     </div>
+                    <div class="stat-card" style="padding: 1.5rem; border-radius: 16px; border: 1px solid #e2e8f0; background: white; text-align: center;">
+                        <span class="stat-value" id="stat-filtered-regs" style="font-size: 2.2rem; line-height: 1.2; font-weight: 800; color: var(--secondary-color);">0</span>
+                        <span class="stat-label" style="font-size: 0.75rem; font-weight: 700; color: var(--text-label); letter-spacing: 0.05em; text-transform: uppercase;">Matching Filters</span>
+                    </div>
+                </div>
+                
+                <!-- Filter Toolbar -->
+                <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 16px; border: 1px solid #e2e8f0; background: white;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="reg-filter-search" style="font-size: 0.8rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.5rem;">Search Name / Phone</label>
+                            <input type="text" id="reg-filter-search" placeholder="Type name or phone..." style="padding: 10px 12px; border-radius: 10px; font-size: 0.9rem; border: 2px solid #e2e8f0; width: 100%;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="reg-filter-fest" style="font-size: 0.8rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.5rem;">Fest</label>
+                            <select id="reg-filter-fest" style="padding: 10px 12px; border-radius: 10px; font-size: 0.9rem; border: 2px solid #e2e8f0; width: 100%;">
+                                <option value="">All Fests</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="reg-filter-event" style="font-size: 0.8rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.5rem;">Event</label>
+                            <select id="reg-filter-event" style="padding: 10px 12px; border-radius: 10px; font-size: 0.9rem; border: 2px solid #e2e8f0; width: 100%;" disabled>
+                                <option value="">All Events (Select Fest First)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="reg-filter-class" style="font-size: 0.8rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.5rem;">Class</label>
+                            <select id="reg-filter-class" style="padding: 10px 12px; border-radius: 10px; font-size: 0.9rem; border: 2px solid #e2e8f0; width: 100%;">
+                                <option value="">All Classes</option>
+                                <option value="9">Class 9</option>
+                                <option value="10">Class 10</option>
+                                <option value="11">Class 11</option>
+                                <option value="12">Class 12</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="reg-filter-sort" style="font-size: 0.8rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.5rem;">Sort By</label>
+                            <select id="reg-filter-sort" style="padding: 10px 12px; border-radius: 10px; font-size: 0.9rem; border: 2px solid #e2e8f0; width: 100%;">
+                                <option value="date-desc">Date (Newest First)</option>
+                                <option value="date-asc">Date (Oldest First)</option>
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                                <option value="class-asc">Class (Ascending)</option>
+                                <option value="class-desc">Class (Descending)</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 0; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button id="btn-clear-reg-filters" class="btn btn-secondary" style="padding: 10px 16px; font-size: 0.9rem; border-radius: 10px; height: 44px; width: 100%; justify-content: center; border-color: #e2e8f0;">
+                                <i data-lucide="filter-x"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card table-responsive" style="margin-top:1rem; max-height: 700px; overflow-y: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Student Info</th>
+                                <th>Contact Info</th>
+                                <th>Registration Details</th>
+                                <th>CV / Msg</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registrations-table-body">
+                            <tr><td colspan="5">Loading registrations...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

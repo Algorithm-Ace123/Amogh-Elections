@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCIS Student Portal</title>
+    <title>SCIS Student Portal | Student Council 2026-27</title>
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -12,7 +12,7 @@
 <body>
     <nav class="navbar">
         <div class="logo">
-            <img src="/static/images/scislogo-removebg-preview.png" alt="School Logo" style="height: 40px; width: auto;">
+            <img src="/static/images/scislogo-removebg-preview.png" alt="SCIS Small Logo" style="height: 38px; width: auto;">
             <span class="brand">SCIS Student Portal</span>
         </div>
         <button class="hamburger" onclick="toggleNav()"><i data-lucide="menu"></i></button>
@@ -23,7 +23,7 @@
             <li class="dropdown">
                 <a href="#" class="nav-link">Engage <i data-lucide="chevron-down" size="14"></i></a>
                 <div class="dropdown-content">
-                    <a href="#polls" class="nav-link" data-page="polls"><i data-lucide="bar-chart-2"></i> Polls</a>
+                    <a href="#registrations" class="nav-link" data-page="registrations"><i data-lucide="user-plus"></i> Register</a>
                     <a href="#idea-box" class="nav-link" data-page="idea-box"><i data-lucide="lightbulb"></i> Idea Box</a>
                     <a href="#feedback" class="nav-link" data-page="feedback"><i data-lucide="message-square"></i> Feedback</a>
                 </div>
@@ -47,50 +47,94 @@
     <main id="app-content">
         <!-- Home Page -->
         <section id="home" class="page active">
+            <!-- Hero -->
             <div class="hero">
-                <div style="margin-bottom: 2rem;">
-                    <img src="/static/images/logo_school_captain-removebg-preview.png" alt="School Captain Logo" style="height: 160px; width: auto; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); background: white; padding: 10px; border: 2px solid var(--border-color);">
+                <div class="hero-badge">✨ Student Council 2026-27</div>
+                <div class="hero-logo">
+                    <img src="https://www.scis.co.in/images/SCISLogo-green.png" alt="SCIS Logo" style="height: 120px; width: auto; filter: drop-shadow(0 10px 30px rgba(0,165,81,0.15));">
                 </div>
                 <h1 class="hero-title">
-                    <span class="hero-line1">Vote for <span class="text-fire">Amogh</span>.</span>
-                    <span class="hero-line2">Vote for <span class="brand">Fire & Ice</span>.</span>
+                    <span class="hero-line1">Your <span class="hero-accent-green">Voice</span>,</span>
+                    <span class="hero-line2">Our <span class="hero-accent-blue">Mission</span> 🚀</span>
                 </h1>
-                <p class="slogan">"<span class="slogan-fire">Fire to act.</span> <span class="slogan-ice">Ice to listen.</span>"</p>
+                <p class="slogan">The SCIS Student Portal — built for <span class="slogan-primary">transparency</span>, <span class="slogan-rose">accountability</span> &amp; <span class="slogan-sky">community</span>.</p>
                 <div class="hero-buttons">
-                    <button class="btn btn-primary" onclick="navigate('feedback')"><i data-lucide="message-circle"></i> Speak Anonymously</button>
-                </div>
-                
-                <div class="quick-links">
-                    <a href="#polls" onclick="navigate('polls')" class="quick-link-btn"><i data-lucide="bar-chart-2"></i> Polls</a>
-                    <a href="#idea-box" onclick="navigate('idea-box')" class="quick-link-btn"><i data-lucide="lightbulb"></i> Idea Box</a>
-                    <a href="#track" onclick="navigate('track')" class="quick-link-btn"><i data-lucide="search"></i> Universal Tracker</a>
-                    <a href="#progress" onclick="navigate('progress')" class="quick-link-btn"><i data-lucide="layout"></i> Task Board</a>
+                    <button class="btn btn-primary" onclick="navigate('feedback')">
+                        <i data-lucide="message-circle"></i> Speak Anonymously
+                    </button>
+                    <button class="btn btn-secondary" onclick="navigate('progress')">
+                        <i data-lucide="layout"></i> See Our Work
+                    </button>
                 </div>
             </div>
 
+            <!-- Colorful Quick Links -->
+            <div class="quick-links">
+                <a href="#registrations" onclick="navigate('registrations')" class="quick-link-btn ql-mint">
+                    <i data-lucide="user-plus"></i> Register
+                </a>
+                <a href="#idea-box" onclick="navigate('idea-box')" class="quick-link-btn ql-rose">
+                    <i data-lucide="lightbulb"></i> Idea Box
+                </a>
+                <a href="#track" onclick="navigate('track')" class="quick-link-btn ql-sky">
+                    <i data-lucide="search"></i> Tracker
+                </a>
+                <a href="#progress" onclick="navigate('progress')" class="quick-link-btn ql-lavender">
+                    <i data-lucide="layout"></i> Task Board
+                </a>
+                <a href="#announcements" onclick="navigate('announcements')" class="quick-link-btn ql-lemon">
+                    <i data-lucide="bell"></i> Updates
+                </a>
+            </div>
+
+            <!-- Feature Cards -->
             <div class="features">
-                <div class="card card-urgent" style="text-align: left;">
-                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: rgba(239, 68, 68, 0.1); border-radius: 12px; margin-bottom: 1.5rem;">
-                        <i data-lucide="shield" class="text-fire" style="width: 24px; height: 24px;"></i>
+                <div class="card card-mint">
+                    <div class="feature-icon" style="background: rgba(0, 165, 81, 0.1);">
+                        <i data-lucide="shield-check" style="color: #00A551;"></i>
                     </div>
-                    <h3 style="margin-bottom: 0.75rem; font-size: 1.25rem;">The Truth, Anonymously</h3>
-                    <p style="color: var(--text-body); line-height: 1.6;">We all know what's really going wrong behind the scenes, but no one wants a target on their back. Now, you hold the power. Submit anonymous, unfiltered feedback. I will read it, and I will act on it. No consequences. Just results.</p>
+                    <h3>Anonymous Feedback</h3>
+                    <p>Your identity is 100% protected. Share concerns, call out issues, and be heard — without fear. Every submission goes directly to the Council. 🛡️</p>
+                    <a class="feature-cta" onclick="navigate('feedback')" href="#">Submit Feedback →</a>
                 </div>
-                
-                <div class="card card-info" style="text-align: left;">
-                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: rgba(56, 189, 248, 0.1); border-radius: 12px; margin-bottom: 1.5rem;">
-                        <i data-lucide="eye" class="text-ice" style="width: 24px; height: 24px;"></i>
+
+                <div class="card card-rose">
+                    <div class="feature-icon" style="background: rgba(255, 105, 180, 0.1);">
+                        <i data-lucide="zap" style="color: #f06595;"></i>
                     </div>
-                    <h3 style="margin-bottom: 0.75rem; font-size: 1.25rem;">End the Empty Promises</h3>
-                    <p style="color: var(--text-body); line-height: 1.6;">Every year, candidates stand up and tell you exactly what you want to hear. Then they disappear. Not this time. With our Universal Tracker, you will watch every move I make. If I fail, you'll see it. Hold me accountable.</p>
+                    <h3>Idea Box</h3>
+                    <p>Got a bold idea to improve school life? Drop it here! Strong ideas get turned into real Council initiatives. You shape the agenda. 💡</p>
+                    <a class="feature-cta" onclick="navigate('idea-box')" href="#" style="color: #f06595;">Submit Idea →</a>
                 </div>
-                
-                <div class="card" style="text-align: left; border: 1px solid #e2e8f0;">
-                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #f1f5f9; border-radius: 12px; margin-bottom: 1.5rem;">
-                        <i data-lucide="lightbulb" style="color: #64748b; width: 24px; height: 24px;"></i>
+
+                <div class="card card-sky">
+                    <div class="feature-icon" style="background: rgba(3, 78, 161, 0.08);">
+                        <i data-lucide="eye" style="color: #4dabf7;"></i>
                     </div>
-                    <h3 style="margin-bottom: 0.75rem; font-size: 1.25rem;">Demand What's Yours</h3>
-                    <p style="color: var(--text-body); line-height: 1.6;">You are the ones walking these halls every day. You know what needs to change better than anyone. Don't just complain—give me your solutions in the Idea Box. If your idea is strong, it becomes our official policy.</p>
+                    <h3>Radical Transparency</h3>
+                    <p>No more empty promises. Track every Council initiative in real time — what's planned, what's in progress, what's done. Zero excuses. 👁️</p>
+                    <a class="feature-cta" onclick="navigate('progress')" href="#" style="color: #4dabf7;">View Board →</a>
+                </div>
+
+                <div class="card card-lemon">
+                    <div class="feature-icon" style="background: rgba(230, 119, 0, 0.08);">
+                        <i data-lucide="search" style="color: #e67700;"></i>
+                    </div>
+                    <h3>Universal Tracker</h3>
+                    <p>Submitted feedback or an idea? Track it using your unique ID. Know exactly where your submission stands at every step. 🔍</p>
+                    <a class="feature-cta" onclick="navigate('track')" href="#" style="color: #e67700;">Track Now →</a>
+                </div>
+            </div>
+
+            <!-- Manifesto Teaser Banner -->
+            <div class="home-banner">
+                <div class="home-banner-content">
+                    <span class="banner-emoji">📜</span>
+                    <div>
+                        <h3>Our Manifesto</h3>
+                        <p>Inclusive leadership, student wellbeing, academic support — read what we stand for.</p>
+                    </div>
+                    <button class="btn btn-banner" onclick="navigate('manifesto')">Read Manifesto →</button>
                 </div>
             </div>
         </section>
@@ -99,56 +143,55 @@
         <!-- About Page -->
         <section id="about" class="page">
             <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
-                <img src="/static/images/logo_school_captain-removebg-preview.png" alt="School Captain Logo" style="height: 120px; width: auto; border-radius: 12px; background: white; padding: 10px; box-shadow: var(--shadow-sm);">
+                <img src="/static/images/scislogo-removebg-preview.png" alt="SCIS Logo" style="height: 80px; width: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));">
                 <div>
-                    <h2 style="margin-bottom: 0.5rem;"><i data-lucide="user-circle"></i> About Amogh</h2>
-                    <p style="color: var(--text-label); font-weight: 500;">School Captain Candidate 2026</p>
+                    <h2 style="margin-bottom: 0.5rem;"><i data-lucide="info"></i> About the Portal</h2>
+                    <p style="color: var(--text-label); font-weight: 500;">SCIS Student Council 2026-27</p>
                 </div>
             </div>
-            <div class="card">
-                <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">I am not here to play politics. I am here because, just like you, I am exhausted by the status quo. The <strong>Fire & Ice</strong> campaign isn't just a catchy slogan; it's a completely new, unapologetic system of student governance.</p>
-                <p style="margin-bottom: 1.5rem;"><strong>Ice</strong> means I will listen to your deepest, unspoken frustrations with absolute empathy. I hear you. But listening is useless without action. That's where <strong>Fire</strong> comes in. I bring the strict discipline and relentless drive necessary to force real change.</p>
-                <p>Discipline isn't about restricting you—it's about holding the system and the rule-breakers accountable so that the rest of us can thrive in a fair, safe environment. You want more freedom, better events, and a better school life? That requires order and respect first. Choose someone who will fight for you, not just smile at you.</p>
+            <div class="card card-sky">
+                <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">The <strong>SCIS Student Portal</strong> is the official communication bridge between the student body and the Student Council of 2026-27. Our mission is to foster a community of transparency, accountability, and active participation.</p>
+                <p style="margin-bottom: 1.5rem;">We believe in the power of <strong>Student Voice</strong>. Whether it's through the anonymous feedback system, the idea box, or real-time progress tracking, we are committed to making your school experience the best it can be.</p>
+                <p>Guided by the values of South City International School, we strive for excellence in every initiative. This portal ensures that every student has a direct line to their representatives, and every promise made is a promise tracked.</p>
             </div>
         </section>
 
         <!-- Manifesto Page -->
         <section id="manifesto" class="page">
-            <h2><i data-lucide="scroll-text"></i> Campaign Promises</h2>
+            <h2><i data-lucide="scroll-text"></i> Council Vision & Pillars</h2>
             <div class="manifesto-grid">
-                <div class="card card-info">
-                    <h4><i data-lucide="heart-handshake" class="text-ice"></i> Inclusive Leadership</h4>
-                    <p>Every student matters. I will be the leader who listens without judgment, who welcomes all voices regardless of grade, background, or status. My door is open to everyone—always.</p>
+                <div class="card card-mint">
+                    <h4><i data-lucide="heart-handshake" style="color: #00A551;"></i> Inclusive Leadership</h4>
+                    <p>Every student matters. We will be the council that listens without judgment, welcoming all voices regardless of grade, background, or status. Our door is open to everyone—always.</p>
+                </div>
+                <div class="card card-rose">
+                    <h4><i data-lucide="smile" style="color: #f06595;"></i> Approachable & Present</h4>
+                    <p>We are not hidden behind closed doors. We are visible, accessible, and ready to listen. Whether in the hallway or at events, your council representatives are here for you.</p>
+                </div>
+                <div class="card card-sky">
+                    <h4><i data-lucide="users" style="color: #4dabf7;"></i> Unity Without Bias</h4>
+                    <p>Division weakens us; unity defines us. We will bring every student together through real events, transparent decisions, and a council that actually represents YOU.</p>
+                </div>
+                <div class="card card-lavender">
+                    <h4><i data-lucide="shield-alert" style="color: #9775fa;"></i> Student Wellbeing</h4>
+                    <p>Your safety and mental health are our priority. We are implementing better reporting systems and wellbeing initiatives to ensure a supportive environment for all.</p>
+                </div>
+                <div class="card card-lemon">
+                    <h4><i data-lucide="trophy" style="color: #e67700;"></i> Academic Support</h4>
+                    <p>Excellence is our goal. We will champion academic resources, peer-to-peer tutoring, and smarter study materials to help every student reach their full potential.</p>
                 </div>
                 <div class="card card-info">
-                    <h4><i data-lucide="smile" class="text-ice"></i> Approachable & Present</h4>
-                    <p>You won't find me hidden behind closed doors. I will be visible, accessible, and ready to listen. Whether in the hallway or at events, I'm the leader who actually cares about your day-to-day life.</p>
-                </div>
-                <div class="card card-info">
-                    <h4><i data-lucide="users" class="text-ice"></i> Unity Without Bias</h4>
-                    <p>Division weakens us; unity defines us. I will bring every student together through real events, transparent decisions, and a student council that actually represents YOU. Under my leadership, no one will feel forgotten—because I lead for ALL, not just the privileged few.</p>
-                </div>
-                <div class="card card-urgent">
-                    <h4><i data-lucide="shield-alert" class="text-fire"></i> Anonymous AI Justice</h4>
-                    <p>Bullies rely on your silence. We are stripping away their power. Our AI-assisted reporting system guarantees that if someone crosses the line, they will be dealt with swiftly, without anyone ever knowing it was you who spoke up.</p>
-                </div>
-                <div class="card card-urgent">
-                    <h4><i data-lucide="trophy" class="text-fire"></i> Unrivaled Academic Excellence</h4>
-                    <p>Excellence is not a goal—it is my expectation. I will champion academic resources like no leader before me, securing better tutoring, smarter study materials, and opportunities that set our students up to dominate in every exam. Your success is my legacy.</p>
-                </div>
-                <div class="card card-urgent">
-                    <h4><i data-lucide="gavel" class="text-fire"></i> Strict Discipline & Order</h4>
-                    <p>Rules exist for a reason. I will enforce clear, fair standards across all students—no exceptions, no favorites. Every student deserves a safe, orderly environment, and I will make sure that discipline is applied consistently and justly.</p>
+                    <h4><i data-lucide="gavel" style="color: #034EA1;"></i> Integrity & Respect</h4>
+                    <p>We stand for values. We will promote a culture of mutual respect and integrity across all students—no exceptions. Every student deserves a safe and orderly environment.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Anonymous Feedback Page -->
         <section id="feedback" class="page">
             <h2><i data-lucide="message-square"></i> Speak Anonymously</h2>
-            <p style="margin-bottom: 2.5rem; color: var(--text-label);">Your identity is 100% protected. Tell us what needs to change in our school.</p>
+            <p style="margin-bottom: 2.5rem; color: var(--text-label);">Your identity is 100% protected. Tell us what needs to change in our school! 🤐</p>
             
-            <form id="feedback-form" class="card form-container card-urgent">
+            <form id="feedback-form" class="card form-container card-sky">
                 <div class="form-group">
                     <label>Category</label>
                     <select id="f-category" required>
@@ -182,7 +225,7 @@
         <!-- Universal Tracking Page -->
         <section id="track" class="page">
             <h2><i data-lucide="crosshair"></i> Universal Tracker</h2>
-            <div class="card form-container card-info">
+            <div class="card form-container card-lavender">
                 <div class="form-group">
                     <label>Enter your ID</label>
                     <input type="text" id="t-caseid" placeholder="e.g. FI-8K29Q, ID-XXXXX, LF-XXXXX, SG-XXXXX">
@@ -192,21 +235,6 @@
             </div>
         </section>
 
-        <!-- Support Page -->
-        <section id="support" class="page">
-            <div class="text-center">
-                <h2><i data-lucide="heart" class="text-fire"></i> Join the Movement</h2>
-                <p style="margin-bottom: 3rem; color: var(--text-label);">Together, we can make Fire & Ice a reality.</p>
-            </div>
-            <div class="card text-center" style="padding: 4rem 2rem;">
-                <h1 id="support-counter" class="gradient-text" style="font-size: 6rem; justify-content: center; margin-bottom: 1rem;">--</h1>
-                <p style="font-size: 1.25rem; font-weight: 600; margin-bottom: 2.5rem; color: var(--text-label);">Students supporting Fire & Ice</p>
-                <button class="btn btn-primary" onclick="pledgeSupport()" id="pledge-btn" style="padding: 1.5rem 4rem; font-size: 1.2rem;"><i data-lucide="thumbs-up"></i> Pledge Your Support</button>
-                <p id="support-msg" class="result-msg" style="margin-top: 2rem;"></p>
-            </div>
-        </section>
-
-        <!-- Announcements Page -->
         <section id="announcements" class="page">
             <h2><i data-lucide="bell"></i> Latest Updates</h2>
             <div id="announcements-list" class="feed-list" style="margin-top: 2rem;">
@@ -214,32 +242,27 @@
             </div>
         </section>
 
-        <!-- Progress (Task Board) Page -->
         <section id="progress" class="page">
             <div class="progress-header">
                 <h2><i data-lucide="layout"></i> What We're Building</h2>
-                <p class="subtitle">Full transparency on every commitment we've made and every action we're taking.</p>
+                <p class="subtitle">Full transparency on every action we're taking for YOU. 🛠️</p>
                 <p class="last-updated">Last updated: <span id="progress-last-updated">Just now</span></p>
             </div>
             
             <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-value" id="stat-completed">0</span>
-                    <span class="stat-label">Completed</span>
+                <div class="stat-card card-mint">
+                    <span id="stat-total" class="stat-value">--</span>
+                    <span class="stat-label">Total Initiatives</span>
                 </div>
-                <div class="stat-card">
-                    <span class="stat-value" id="stat-in-progress">0</span>
+                <div class="stat-card card-rose">
+                    <span id="stat-active" class="stat-value">--</span>
                     <span class="stat-label">In Progress</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-value" id="stat-planned">0</span>
-                    <span class="stat-label">Planned</span>
                 </div>
             </div>
 
             <div class="card overall-progress" style="margin-bottom: 3rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                    <h3 style="margin:0;">Campaign Commitments — Overall Progress</h3>
+                    <h3 style="margin:0;">Council Initiatives — Overall Progress</h3>
                 </div>
                 <div class="progress-bar-container">
                     <div class="progress-bar-fill" id="overall-progress-bar" style="width: 0%;"></div>
@@ -258,34 +281,72 @@
             <div id="progress-board-view">
                 <!-- Tab specific progress and task list loaded here -->
             </div>
-            <h3 style="margin-top: 4rem; margin-bottom: 1.5rem;"><i data-lucide="award"></i> Recently Completed</h3>
-            <div id="wins-wall" class="wins-grid">
-                <!-- Completed tasks loaded here -->
-            </div>
         </section>
 
-        <!-- Polls Page -->
-        <section id="polls" class="page">
+        <!-- Registrations Page -->
+        <section id="registrations" class="page">
             <div class="polls-header text-center" style="margin-bottom: 3rem;">
-                <h2>Your Voice. Your School.</h2>
-                <p class="subtitle">Vote on what matters. Every vote shapes our priorities.</p>
+                <h2><i data-lucide="user-plus"></i> Fest &amp; Event Registration</h2>
+                <p class="subtitle">Join fests, participate in exciting events, and showcase your talent!</p>
             </div>
 
-            <h3 class="section-title"><i data-lucide="activity"></i> Active Polls</h3>
-            <div id="active-polls-list" class="polls-grid">
-                Loading active polls...
-            </div>
+            <form id="registration-form" class="card form-container card-lemon">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label>Student's Full Name</label>
+                        <input type="text" id="reg-name" required placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label>Class / Grade</label>
+                        <input type="text" id="reg-class" required placeholder="e.g. 10, 11, 12">
+                    </div>
+                </div>
 
-            <h3 class="section-title" style="margin-top: 4rem;"><i data-lucide="clock"></i> Upcoming Polls</h3>
-            <div id="upcoming-polls-list" class="upcoming-grid">
-                <!-- Upcoming list -->
-            </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label>Section</label>
+                        <input type="text" id="reg-section" required placeholder="e.g. A, B, C">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="reg-phone" required placeholder="Enter your phone number">
+                    </div>
+                </div>
 
-            <h3 class="section-title" style="margin-top: 4rem;"><i data-lucide="archive"></i> Closed Polls</h3>
-            <p class="subtitle" style="margin-bottom: 1rem;">These results shaped our manifesto</p>
-            <div id="closed-polls-list" class="closed-accordion">
-                <!-- Closed list -->
-            </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label>Parent's Phone Number</label>
+                        <input type="tel" id="reg-parent-phone" required placeholder="Enter parent's phone number">
+                    </div>
+                    <div class="form-group">
+                        <label>Select Fest</label>
+                        <select id="reg-fest" required onchange="onFestChange(this.value)">
+                            <option value="">-- Choose Fest --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label>Select Event</label>
+                        <select id="reg-event" required disabled>
+                            <option value="">-- Select Fest First --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>CV / Resume Link <span style="font-weight:400; color:var(--text-label); font-size:0.8rem;">(Optional)</span></label>
+                        <input type="url" id="reg-cv" placeholder="e.g. Google Drive, OneDrive link">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Past Experience / Message <span style="font-weight:400; color:var(--text-label); font-size:0.8rem;">(Optional)</span></label>
+                    <textarea id="reg-message" rows="4" placeholder="Tell us about any relevant past experience or write a brief message..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100" id="submit-registration-btn"><i data-lucide="send"></i> Complete Registration</button>
+                <p id="registration-result" class="result-msg"></p>
+            </form>
         </section>
 
         <!-- Idea Box Page -->
@@ -293,7 +354,7 @@
             <h2><i data-lucide="lightbulb" class="text-ice"></i> The Idea Box</h2>
             <p style="margin-bottom: 2.5rem; color: var(--text-label);">Share your vision for our school. Creative, constructive, and forward-thinking ideas only.</p>
             
-            <form id="idea-form" class="card form-container">
+            <form id="idea-form" class="card form-container card-rose">
                 <div class="form-group">
                     <label>Title of Idea</label>
                     <input type="text" id="i-title" maxlength="60" required placeholder="Give your idea a catchy name">
@@ -332,7 +393,7 @@
             <h2><i data-lucide="search"></i> Lost & Found Hub</h2>
             <p style="margin-bottom: 2.5rem; color: var(--text-label);">A community-driven board to reconnect you with your items.</p>
             
-            <div class="card form-container card-info" style="margin-bottom: 4rem;">
+            <div class="card form-container card-lemon" style="margin-bottom: 4rem;">
                 <form id="lf-form">
                     <div class="form-group">
                         <label>Post Type</label>
@@ -359,10 +420,10 @@
 
         <!-- Study Groups Page -->
         <section id="study-groups" class="page">
-            <h2 class="text-fire"><i data-lucide="users"></i> Learn Together. Rise Together.</h2>
+            <h2 class="text-primary"><i data-lucide="users"></i> Learn Together. Rise Together.</h2>
             <p style="margin-bottom: 2rem;">Find study partners or share notes. Posts expire after 7 days.</p>
             
-            <div class="card form-container" style="margin-bottom: 2rem;">
+            <div class="card form-container card-sky" style="margin-bottom: 2rem;">
                 <form id="sg-form">
                     <div class="form-group"><label>Subject</label><input type="text" id="sg-subj" required></div>
                     <div class="form-group"><label>Topic / Chapter</label><input type="text" id="sg-topic" required></div>
@@ -382,10 +443,10 @@
         <div class="footer-content">
             <div class="footer-col">
                 <div class="logo" style="margin-bottom: 2rem;">
-                    <img src="/static/images/scislogo-removebg-preview.png" alt="School Logo" style="height: 50px; width: auto; filter: brightness(0) invert(1); opacity: 0.8;">
+                    <img src="/static/images/scislogo-removebg-preview.png" alt="SCIS Logo" style="height: 45px; width: auto; filter: brightness(0) invert(1) grayscale(1);">
                     <span class="brand">SCIS Student Portal</span>
                 </div>
-                <p style="font-size: 0.9rem; line-height: 1.8;">Bringing the balance of action and empathy to school leadership. Vote for Amogh for a better, safer, and more transparent future.</p>
+                <p style="font-size: 0.9rem; line-height: 1.8;">The official hub for student governance at South City International School. Empowering student voices for the 2026-27 academic session.</p>
             </div>
             <div class="footer-col">
                 <h4>Quick Access</h4>
@@ -409,7 +470,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <div>&copy; 2026 SCIS Student Portal. Built with <i data-lucide="heart" size="14" class="text-fire"></i> for the students.</div>
+            <div>&copy; 2026 SCIS Student Portal. Built for the Student Council of 2026-27.</div>
             <div style="display: flex; gap: 2rem; align-items: center;">
                 <a href="#" onclick="window.location.replace('https://www.google.com')" style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; opacity: 0.7;"><i data-lucide="log-out" size="16"></i> Secure Exit</a>
             </div>
@@ -417,6 +478,19 @@
     </footer>
 
     <button class="quick-exit" onclick="window.location.replace('https://www.google.com')" title="Leave this page instantly"><i data-lucide="x" size="16"></i> Quick Exit</button>
+
+    <!-- Task Detail Modal -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content task-modal-content">
+            <div class="modal-header">
+                <div id="modal-task-badge"></div>
+                <button class="close-modal" onclick="closeTaskModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="task-modal-body">
+                <!-- Task details will be injected here -->
+            </div>
+        </div>
+    </div>
 
     <script src="/static/app.js"></script>
     <script>

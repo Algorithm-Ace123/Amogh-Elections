@@ -40,10 +40,10 @@ function switchAdminTab(tabId, clickedBtn) {
     document.getElementById('tab-' + tabId).style.display = 'block';
     
     if (tabId === 'submissions') loadSubmissions('feedback');
-    if (tabId === 'polls') loadAdminPolls();
+    if (tabId === 'fests') loadAdminFests();
+    if (tabId === 'registrations') loadAdminRegistrations();
     if (tabId === 'tasks') loadAdminTasks();
     if (tabId === 'announcements') loadAdminAnnouncements();
-    if (tabId === 'pulse') loadAdminPulse();
     if (tabId === 'filter') loadFilterLogs();
 }
 
@@ -93,7 +93,7 @@ async function loadSubmissions(table) {
                         <small>${content.substring(0, 60)}...</small>
                     </td>
                     <td>
-                        <span class="badge ${status==='Resolved'?'badge-fire':'badge-ice'}">${status}</span><br>
+                        <span class="badge ${status==='Resolved'?'badge-primary':'badge-accent'}">${status}</span><br>
                         <span class="badge" style="background:transparent; border:1px solid #eee; margin-top:4px; color:var(--text-label); font-size:0.65rem;">${priority}</span>
                     </td>
                     <td>
@@ -212,74 +212,157 @@ document.getElementById('response-form').addEventListener('submit', async (e) =>
     }
 });
 
-// --- POLLS MANAGER ---
+// --- FESTS & EVENTS MANAGER ---
 
-function togglePollOptions(type) {
-    const opts = document.getElementById('p-options-container');
-    if (type === 'Yes-No') opts.style.display = 'none';
-    else opts.style.display = 'block';
-}
-
-async function loadAdminPolls() {
-    const tbody = document.getElementById('polls-table-body');
+async function loadAdminFests() {
+    const tbody = document.getElementById('fests-table-body');
+    if (!tbody) return;
     try {
-        const res = await fetch('/api/polls');
-        const data = await res.json();
-        if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="5">No polls found.</td></tr>'; return; }
+        const res = await fetch('/api/fests');
+        const fests = await res.json();
         
-        tbody.innerHTML = data.map(p => {
-            const total = p.options ? p.options.reduce((sum, o) => sum + (o.votes || 0), 0) : 0;
-            return `
+        if (fests.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2">No fests found.</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = fests.map(f => `
             <tr>
-                <td><strong>${p.question}</strong><br><small class="text-muted">${new Date(p.created_at).toLocaleDateString()}</small></td>
-                <td><span class="badge badge-info">${p.type}</span></td>
-                <td><span class="badge ${p.status==='Active'?'badge-fire':''}">  ${p.status}</span></td>
-                <td>${total}</td>
+                <td><strong>${f.name}</strong></td>
                 <td>
-                    <button class="btn" style="padding:4px 10px; font-size:0.75rem; border-color:#ef4444; color:#ef4444;" onclick="deletePoll('${p.id}')">Delete</button>
+                    <button class="btn btn-primary" style="padding:4px 10px; font-size:0.75rem; margin-right:5px;" onclick="selectFest('${f.id}', '${f.name}')">Manage Events</button>
+                    <button class="btn" style="padding:4px 10px; font-size:0.75rem; border-color:#ef4444; color:#ef4444;" onclick="deleteFest('${f.id}')">Delete</button>
                 </td>
             </tr>
-        `}).join('');
-    } catch(e) { tbody.innerHTML = '<tr><td colspan="5">Error loading polls</td></tr>'; }
-}
-
-async function deletePoll(id) {
-    if (!confirm('Delete this poll and all its options/votes? This cannot be undone.')) return;
-    try {
-        const res = await fetch(`/api/admin/polls/${id}`, { method: 'DELETE' });
-        if (res.ok) loadAdminPolls();
-        else alert('Failed to delete poll.');
-    } catch(e) { alert('Network error.'); }
-}
-
-document.getElementById('create-poll-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const type = document.getElementById('p-type').value;
-    const optsInput = document.getElementById('p-options').value;
-    let options = [];
-    if (type === 'Yes-No') options = ['Yes', 'No'];
-    else options = optsInput.split(',').map(s => s.trim()).filter(s => s);
-    
-    if (type !== 'Yes-No' && options.length < 2) {
-        document.getElementById('p-result').innerHTML = '<span class="error-text">Provide at least 2 options</span>';
-        return;
+        `).join('');
+    } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="2">Error loading fests.</td></tr>';
     }
-    
-    const payload = {
-        question: document.getElementById('p-question').value,
-        type: type,
-        status: document.getElementById('p-status').value,
-        options: options
-    };
-    
+}
+
+async function deleteFest(id) {
+    if (!confirm('Are you sure you want to delete this fest and all its events and student registrations?')) return;
     try {
-        const res = await fetch('/api/polls', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+        const res = await fetch(`/api/fests/${id}`, { method: 'DELETE' });
         if (res.ok) {
-            document.getElementById('create-poll-form').reset();
-            document.getElementById('p-result').innerHTML = '<span class="success-text">Poll created!</span>';
-            loadAdminPolls();
+            loadAdminFests();
+            const currentSelectedFestId = document.getElementById('selected-fest-id').value;
+            if (currentSelectedFestId === id) {
+                document.getElementById('fest-events-control').style.display = 'none';
+                document.getElementById('no-fest-selected-msg').style.display = 'block';
+            }
+        } else {
+            alert('Failed to delete fest.');
         }
-    } catch(e) { document.getElementById('p-result').innerHTML = '<span class="error-text">Failed to create poll</span>'; }
+    } catch (e) {
+        alert('Network error.');
+    }
+}
+
+function selectFest(id, name) {
+    document.getElementById('no-fest-selected-msg').style.display = 'none';
+    document.getElementById('fest-events-control').style.display = 'block';
+    document.getElementById('selected-fest-title').textContent = `Events for: ${name}`;
+    document.getElementById('selected-fest-id').value = id;
+    
+    // Clear result message
+    document.getElementById('event-result').textContent = '';
+    
+    loadAdminEvents(id);
+}
+
+async function loadAdminEvents(festId) {
+    const tbody = document.getElementById('events-table-body');
+    if (!tbody) return;
+    try {
+        const res = await fetch(`/api/fests/${festId}/events`);
+        const events = await res.json();
+        
+        if (events.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2">No events found under this fest.</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = events.map(e => `
+            <tr>
+                <td><strong>${e.name}</strong></td>
+                <td>
+                    <button class="btn" style="padding:4px 10px; font-size:0.75rem; border-color:#ef4444; color:#ef4444;" onclick="deleteEvent('${e.id}')">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="2">Error loading events.</td></tr>';
+    }
+}
+
+async function deleteEvent(eventId) {
+    if (!confirm('Are you sure you want to delete this event and all its registrations?')) return;
+    const festId = document.getElementById('selected-fest-id').value;
+    try {
+        const res = await fetch(`/api/events/${eventId}`, { method: 'DELETE' });
+        if (res.ok) {
+            loadAdminEvents(festId);
+        } else {
+            alert('Failed to delete event.');
+        }
+    } catch (e) {
+        alert('Network error.');
+    }
+}
+
+// Form listeners for Fests and Events
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('create-fest-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('fest-name-input');
+        const name = input.value.trim();
+        const result = document.getElementById('fest-result');
+        if (!name) return;
+        try {
+            const res = await fetch('/api/fests', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name })
+            });
+            if (res.ok) {
+                input.value = '';
+                result.innerHTML = '<span class="success-text">Fest created!</span>';
+                loadAdminFests();
+            } else {
+                const data = await res.json();
+                result.innerHTML = `<span class="error-text">${data.error || 'Failed to create fest'}</span>`;
+            }
+        } catch (e) {
+            result.innerHTML = '<span class="error-text">Network error</span>';
+        }
+    });
+
+    document.getElementById('create-event-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('event-name-input');
+        const name = input.value.trim();
+        const festId = document.getElementById('selected-fest-id').value;
+        const result = document.getElementById('event-result');
+        if (!name || !festId) return;
+        try {
+            const res = await fetch(`/api/fests/${festId}/events`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name })
+            });
+            if (res.ok) {
+                input.value = '';
+                result.innerHTML = '<span class="success-text">Event created!</span>';
+                loadAdminEvents(festId);
+            } else {
+                const data = await res.json();
+                result.innerHTML = `<span class="error-text">${data.error || 'Failed to create event'}</span>`;
+            }
+        } catch (e) {
+            result.innerHTML = '<span class="error-text">Network error</span>';
+        }
+    });
 });
 
 // --- TASKS MANAGER ---
@@ -296,9 +379,9 @@ async function loadAdminTasks() {
             const total = t.subtasks ? t.subtasks.length : 0;
             const done = t.subtasks ? t.subtasks.filter(s => s.is_completed).length : 0;
             const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-            let sb = t.status === 'Completed' ? 'badge-success' : 'badge-ice';
+            let sb = t.status === 'Completed' ? 'badge-success' : 'badge-accent';
             if (t.status === 'Planned') sb = '';
-            if (t.status === 'Blocked') sb = 'badge-fire';
+            if (t.status === 'Blocked') sb = 'badge-primary';
             return `
             <tr>
                 <td><strong>${t.title}</strong><br><small class="text-muted">${t.focus_area}</small></td>
@@ -306,7 +389,7 @@ async function loadAdminTasks() {
                     ${total > 0 ? `
                     <div style="display:flex;align-items:center;gap:8px;">
                         <div style="flex:1;height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden;">
-                            <div style="width:${pct}%;height:100%;background:var(--ice-color);border-radius:99px;"></div>
+                            <div style="width:${pct}%;height:100%;background:var(--primary-color);border-radius:99px;"></div>
                         </div>
                         <small class="text-muted" style="white-space:nowrap;">${done}/${total}</small>
                     </div>` : '<small class="text-muted">No subtasks</small>'}
@@ -362,7 +445,7 @@ function renderSubtaskChecklist(subtasks) {
     }
     container.innerHTML = subtasks.map(st => `
         <label style="display:flex;align-items:center;gap:0.75rem;padding:0.55rem 0.75rem;border-radius:10px;cursor:pointer;background:${st.is_completed?'#f0fdf4':'#f8fafc'};border:1px solid ${st.is_completed?'#bbf7d0':'#e2e8f0'};transition:all 0.2s;">
-            <input type="checkbox" data-id="${st.id}" ${st.is_completed?'checked':''} onchange="toggleSubtask(this)" style="width:15px;height:15px;accent-color:var(--ice-color);cursor:pointer;flex-shrink:0;">
+            <input type="checkbox" data-id="${st.id}" ${st.is_completed?'checked':''} onchange="toggleSubtask(this)" style="width:15px;height:15px;accent-color:var(--primary-color);cursor:pointer;flex-shrink:0;">
             <span style="font-size:0.88rem;${st.is_completed?'text-decoration:line-through;color:var(--text-label);':''}">${st.title}</span>
         </label>
     `).join('');
@@ -491,7 +574,7 @@ async function loadFilterLogs() {
             <tr>
                 <td>${new Date(log.created_at).toLocaleString()}</td>
                 <td>${log.form_type}</td>
-                <td><span style="color:var(--fire-color); font-weight:bold;">${log.reason}</span></td>
+                <td><span style="color:var(--primary-color); font-weight:bold;">${log.reason}</span></td>
                 <td>${log.flagged_tokens ? `<code>${log.flagged_tokens}</code>` : '-'}</td>
                 <td><small>${log.truncated_text}</small></td>
                 <td>
@@ -628,51 +711,296 @@ document.getElementById('announcement-form').addEventListener('submit', async (e
     }
 });
 
-// --- PULSE ISSUES ---
-async function loadAdminPulse() {
-    const tbody = document.getElementById('pulse-table-body');
-    try {
-        const res = await fetch('/api/pulse');
-        const data = await res.json();
-        if (!Array.isArray(data) || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4">No pulse issues yet.</td></tr>'; return; }
-        tbody.innerHTML = data.map(p => `
-            <tr>
-                <td><strong>${p.issue_name}</strong></td>
-                <td><small>${p.description || '—'}</small></td>
-                <td><span class="badge badge-ice">${p.votes || 0} votes</span></td>
-                <td><button class="btn" style="padding:4px 10px; font-size:0.75rem; border-color:#ef4444; color:#ef4444;" onclick="deletePulse('${p.id}')">Delete</button></td>
-            </tr>
-        `).join('');
-    } catch(e) { tbody.innerHTML = '<tr><td colspan="4">Error loading pulse issues.</td></tr>'; }
+// --- REGISTRATIONS ---
+let allRegistrations = [];
+let filteredRegistrations = [];
+let registrationsFiltersInitialized = false;
+
+function initRegistrationsFilters() {
+    const searchInput = document.getElementById('reg-filter-search');
+    const festSelect = document.getElementById('reg-filter-fest');
+    const eventSelect = document.getElementById('reg-filter-event');
+    const classSelect = document.getElementById('reg-filter-class');
+    const sortSelect = document.getElementById('reg-filter-sort');
+    const clearBtn = document.getElementById('btn-clear-reg-filters');
+    
+    if (searchInput) searchInput.addEventListener('input', applyRegistrationsFiltersAndSort);
+    if (festSelect) festSelect.addEventListener('change', onFestFilterChange);
+    if (eventSelect) eventSelect.addEventListener('change', applyRegistrationsFiltersAndSort);
+    if (classSelect) classSelect.addEventListener('change', applyRegistrationsFiltersAndSort);
+    if (sortSelect) sortSelect.addEventListener('change', applyRegistrationsFiltersAndSort);
+    if (clearBtn) clearBtn.addEventListener('click', clearRegistrationsFilters);
+    
+    populateFestFilter();
 }
 
-async function deletePulse(id) {
-    if (!confirm('Delete this pulse issue? All votes will be lost.')) return;
+async function populateFestFilter() {
+    const festSelect = document.getElementById('reg-filter-fest');
+    if (!festSelect) return;
+    
+    const selectedVal = festSelect.value;
+    festSelect.innerHTML = '<option value="">All Fests</option>';
+    
     try {
-        const res = await fetch(`/api/admin/pulse/${id}`, { method: 'DELETE' });
-        if (res.ok) loadAdminPulse();
-        else alert('Failed to delete pulse issue.');
-    } catch(e) { alert('Network error.'); }
-}
-
-document.getElementById('create-pulse-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const issue_name = document.getElementById('pulse-title').value;
-    const msg = document.getElementById('pulse-result');
-    try {
-        const res = await fetch('/api/admin/pulse', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({issue_name})
+        const res = await fetch('/api/fests');
+        const fests = await res.json();
+        fests.forEach(f => {
+            const opt = document.createElement('option');
+            opt.value = f.id;
+            opt.textContent = f.name;
+            festSelect.appendChild(opt);
         });
-        if (res.ok) {
-            msg.innerHTML = '<span class="success-text">Pulse issue created!</span>';
-            document.getElementById('create-pulse-form').reset();
-            loadAdminPulse();
-            setTimeout(() => { msg.innerHTML = ''; }, 3000);
-        } else {
-            const d = await res.json();
-            msg.innerHTML = `<span class="error-text">Failed: ${d.error || 'Unknown error'}</span>`;
+        
+        if (selectedVal && Array.from(festSelect.options).some(opt => opt.value === selectedVal)) {
+            festSelect.value = selectedVal;
         }
-    } catch(err) { msg.innerHTML = '<span class="error-text">Network error</span>'; }
+    } catch (e) {
+        console.error("Failed to load fests for filter", e);
+    }
+}
+
+async function onFestFilterChange() {
+    const festId = document.getElementById('reg-filter-fest').value;
+    const eventSelect = document.getElementById('reg-filter-event');
+    if (!eventSelect) return;
+    
+    eventSelect.innerHTML = '<option value="">All Events</option>';
+    
+    if (!festId) {
+        eventSelect.disabled = true;
+        eventSelect.innerHTML = '<option value="">All Events (Select Fest First)</option>';
+        applyRegistrationsFiltersAndSort();
+        return;
+    }
+    
+    eventSelect.disabled = false;
+    try {
+        const res = await fetch(`/api/fests/${festId}/events`);
+        const events = await res.json();
+        events.forEach(e => {
+            const opt = document.createElement('option');
+            opt.value = e.id;
+            opt.textContent = e.name;
+            eventSelect.appendChild(opt);
+        });
+    } catch (e) {
+        console.error("Failed to load events for filter", e);
+    }
+    
+    applyRegistrationsFiltersAndSort();
+}
+
+function clearRegistrationsFilters() {
+    const searchInput = document.getElementById('reg-filter-search');
+    const festSelect = document.getElementById('reg-filter-fest');
+    const eventSelect = document.getElementById('reg-filter-event');
+    const classSelect = document.getElementById('reg-filter-class');
+    const sortSelect = document.getElementById('reg-filter-sort');
+    
+    if (searchInput) searchInput.value = '';
+    if (festSelect) festSelect.value = '';
+    if (eventSelect) {
+        eventSelect.innerHTML = '<option value="">All Events (Select Fest First)</option>';
+        eventSelect.value = '';
+        eventSelect.disabled = true;
+    }
+    if (classSelect) classSelect.value = '';
+    if (sortSelect) sortSelect.value = 'date-desc';
+    
+    applyRegistrationsFiltersAndSort();
+}
+
+function applyRegistrationsFiltersAndSort() {
+    const searchVal = (document.getElementById('reg-filter-search')?.value || '').toLowerCase().trim();
+    const festVal = document.getElementById('reg-filter-fest')?.value || '';
+    const eventVal = document.getElementById('reg-filter-event')?.value || '';
+    const classVal = document.getElementById('reg-filter-class')?.value || '';
+    const sortVal = document.getElementById('reg-filter-sort')?.value || 'date-desc';
+    
+    filteredRegistrations = allRegistrations.filter(r => {
+        // Search filter (Name or Phone number)
+        const nameMatch = r.name && r.name.toLowerCase().includes(searchVal);
+        const phoneMatch = r.phone_number && r.phone_number.toLowerCase().includes(searchVal);
+        const searchMatch = !searchVal || nameMatch || phoneMatch;
+        
+        // Fest filter
+        const festMatch = !festVal || String(r.fest_id) === String(festVal);
+        
+        // Event filter
+        const eventMatch = !eventVal || String(r.event_id) === String(eventVal);
+        
+        // Class filter
+        const classMatch = !classVal || String(r.class) === String(classVal);
+        
+        return searchMatch && festMatch && eventMatch && classMatch;
+    });
+    
+    // Sort
+    filteredRegistrations.sort((a, b) => {
+        if (sortVal === 'date-desc') {
+            return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        } else if (sortVal === 'date-asc') {
+            return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+        } else if (sortVal === 'name-asc') {
+            return (a.name || '').localeCompare(b.name || '');
+        } else if (sortVal === 'name-desc') {
+            return (b.name || '').localeCompare(a.name || '');
+        } else if (sortVal === 'class-asc') {
+            const classA = parseInt(a.class) || 0;
+            const classB = parseInt(b.class) || 0;
+            return classA - classB;
+        } else if (sortVal === 'class-desc') {
+            const classA = parseInt(a.class) || 0;
+            const classB = parseInt(b.class) || 0;
+            return classB - classA;
+        }
+        return 0;
+    });
+    
+    // Update Stats
+    const totalRegsEl = document.getElementById('stat-total-regs');
+    const filteredRegsEl = document.getElementById('stat-filtered-regs');
+    if (totalRegsEl) totalRegsEl.textContent = allRegistrations.length;
+    if (filteredRegsEl) filteredRegsEl.textContent = filteredRegistrations.length;
+    
+    renderRegistrationsTable(filteredRegistrations);
+}
+
+function renderRegistrationsTable(data) {
+    const tbody = document.getElementById('registrations-table-body');
+    if (!tbody) return;
+    
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding: 3rem; color: var(--text-label); font-weight: 500;">No registrations found matching the filters.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = data.map(r => {
+        const fest_name = r.fests ? r.fests.name : 'Unknown Fest';
+        const event_name = r.events ? r.events.name : 'Unknown Event';
+        const date = new Date(r.created_at).toLocaleDateString();
+        
+        const cv_html = r.cv_resume ? `<a href="${r.cv_resume}" target="_blank" class="btn btn-secondary" style="padding:4px 8px; font-size:0.75rem; text-decoration:none; display:inline-block; margin-bottom:4px;">View CV</a>` : '<span class="text-muted">No CV</span>';
+        const msg_html = r.message ? `<div style="max-width:200px; font-size:0.75rem; color:var(--text-label); white-space:normal; word-wrap:break-word;">${r.message}</div>` : '<span class="text-muted">—</span>';
+        
+        return `
+            <tr>
+                <td>
+                    <strong>${r.name}</strong><br>
+                    <small class="text-muted">Class ${r.class} - Sec ${r.section}</small>
+                </td>
+                <td>
+                    <small><strong>Phone:</strong> ${r.phone_number}</small><br>
+                    <small><strong>Parent:</strong> ${r.parent_phone_number}</small>
+                </td>
+                <td>
+                    <span class="badge badge-accent">${fest_name}</span><br>
+                    <small class="text-muted">${event_name}</small><br>
+                    <small class="text-muted" style="font-size:0.7rem;">${date}</small>
+                </td>
+                <td>
+                    ${cv_html}
+                    ${msg_html}
+                </td>
+                <td>
+                    <button class="btn" style="padding:4px 10px; font-size:0.75rem; border-color:#ef4444; color:#ef4444;" onclick="deleteRegistration('${r.id}')">Delete</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function loadAdminRegistrations() {
+    const tbody = document.getElementById('registrations-table-body');
+    if (!tbody) return;
+    
+    if (!registrationsFiltersInitialized) {
+        initRegistrationsFilters();
+        registrationsFiltersInitialized = true;
+    } else {
+        populateFestFilter();
+    }
+    
+    tbody.innerHTML = '<tr><td colspan="5">Loading registrations...</td></tr>';
+    try {
+        const res = await fetch('/api/registrations');
+        allRegistrations = await res.json();
+        applyRegistrationsFiltersAndSort();
+    } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="5">Error loading registrations.</td></tr>';
+    }
+}
+
+async function deleteRegistration(id) {
+    if (!confirm('Are you sure you want to delete this student registration?')) return;
+    try {
+        const res = await fetch(`/api/admin/submissions/registrations/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            loadAdminRegistrations();
+        } else {
+            alert('Failed to delete registration.');
+        }
+    } catch (e) {
+        alert('Network error.');
+    }
+}
+
+function exportRegistrations(type) {
+    const regsToExport = type === 'all' ? allRegistrations : filteredRegistrations;
+    if (regsToExport.length === 0) {
+        alert("No registrations to export.");
+        return;
+    }
+    
+    // Construct CSV
+    const headers = ["Name", "Class", "Section", "Phone Number", "Parent Phone Number", "Fest", "Event", "CV/Resume", "Message", "Registered At"];
+    const rows = regsToExport.map(r => {
+        const fest_name = r.fests ? r.fests.name : 'Unknown Fest';
+        const event_name = r.events ? r.events.name : 'Unknown Event';
+        const date = new Date(r.created_at).toLocaleString();
+        
+        return [
+            r.name,
+            r.class,
+            r.section,
+            r.phone_number,
+            r.parent_phone_number,
+            fest_name,
+            event_name,
+            r.cv_resume || '',
+            r.message || '',
+            date
+        ].map(val => {
+            // Escape double quotes and wrap in quotes if contains comma, quote, or newline
+            let cleanVal = String(val).replace(/"/g, '""');
+            if (cleanVal.includes(',') || cleanVal.includes('"') || cleanVal.includes('\n') || cleanVal.includes('\r')) {
+                cleanVal = `"${cleanVal}"`;
+            }
+            return cleanVal;
+        });
+    });
+    
+    const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+    
+    // Download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    
+    const dateStr = new Date().toISOString().split('T')[0];
+    const filename = type === 'all' ? `registrations_all_${dateStr}.csv` : `registrations_filtered_${dateStr}.csv`;
+    
+    link.setAttribute("download", filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Initialize Lucide Icons
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 });
